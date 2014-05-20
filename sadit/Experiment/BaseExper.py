@@ -2,11 +2,11 @@ import argparse
 import os
 from sadit.util import abstract_method, load_para
 
-ROOT = os.environ.get('SADIT_ROOT')
+# ROOT = os.environ.get('SADIT_ROOT')
 
 
 class BaseExper(object):
-    ROOT = ROOT
+    # ROOT = ROOT
 
     def __init__(self, argv, parser=None):
         # import ipdb;ipdb.set_trace()

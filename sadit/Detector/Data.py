@@ -68,7 +68,7 @@ class Data(object):
 
 import pyximport; pyximport.install()
 from sadit.util import np
-from CythonUtil import IP, parse_records, c_parse_records_fs
+from sadit.CythonUtil import IP, parse_records, c_parse_records_fs
 # IP = lambda x:tuple(int(v) for v in x.rsplit('.'))
 class MEM_DiskFile(Data):
     """ abstract base class for hard disk file The flow file into MEMory as a

@@ -76,7 +76,7 @@ class Detect(BaseExper):
         # parser.add_argument('--entropy_threshold', default=None,
         #         help = """ the threshold for entropy,
         #         """)
-        parser.add_argument('--pic_name', default= self.ROOT + '/res.eps',
+        parser.add_argument('--pic_name', default= None,
                 help = """picture name for the detection result""")
 
         parser.add_argument('--pic_show', default=False, action='store_true',
