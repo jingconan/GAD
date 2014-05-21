@@ -213,19 +213,21 @@ def get_feature_hash_list(F, level):
     """
     # FIXME Add doctest here
     level = tuple(level)
-    # import ipdb;ipdb.set_trace()
-    try:
-        return [cache_[level][tuple(vec)] for vec in itertools.izip(*F)]
-    except KeyError:
-        # import ipdb;ipdb.set_trace()
-        basis = [1]
-        cache_[level] = dict()
-        for i in xrange( len(level) - 1 ):
-            basis.append( basis[-1] * level[i] )
-        for digits in itertools.product(*[range(d) for d in level]):
-            cache_[level][digits] = sum( d*b for d, b in zip(digits, basis) )
+    # basis = np.cumprod(level)
+    basis = [1]
+    for i in xrange( len(level) - 1 ):
+        basis.append( basis[-1] * level[i] )
 
-        return get_feature_hash_list(F, level)
+    if cache_.get(level) is None:
+        cache_[level] = dict()
+    res = []
+    # import ipdb;ipdb.set_trace()
+    for vec in itertools.izip(*F):
+        if cache_[level].get(tuple(vec)) is None:
+            cache_[level][tuple(vec)] = np.dot(basis, vec)
+        res.append(cache_[level][tuple(vec)])
+    return res
+
 
 
 def model_based(q_fea_vec, fea_QN):

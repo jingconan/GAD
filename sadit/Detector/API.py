@@ -56,6 +56,7 @@ data_handler_handle_map = {
 
 from .Data import *
 data_map = {
+        'csv': CSVFile,
         'fs': MEM_FS,
         'pcap2netflow': MEM_Pcap2netflow,
         'flow_exporter': MEM_FlowExporter,

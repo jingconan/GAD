@@ -69,14 +69,16 @@ class QuantizeDataHandler(DataHandler):
     def quantize_fea(self, rg=None, rg_type=None):
         """get quantized features for part of the flows"""
         fea_vec = self.get_fea_slice(rg, rg_type)
-        fea_vec = fea_vec.view('<f8').reshape(-1, len(fea_vec.dtype))
+        # import ipdb;ipdb.set_trace()
+        # fea_vec = fea_vec.view('<f8').reshape(-1, len(fea_vec.dtype))
 
         fr = self.global_fea_range
         quan_len = (fr[:, 1] - fr[:, 0]) / self.fea_QN
         min_val = np.outer(np.ones(fea_vec.shape[0],), fr[:, 0])
         q_fea_vec = (fea_vec - min_val) / quan_len
         q_fea_vec = np.floor(q_fea_vec)
-        #FIXME check when feature is larger than the range
+        q_fea_vec = np.clip(q_fea_vec, [0] * len(self.fea_QN),
+                np.array(self.fea_QN) - 1)
         return q_fea_vec.T
 
     def hash_quantized_fea(self, rg, rg_type):
