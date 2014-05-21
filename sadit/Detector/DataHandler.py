@@ -181,17 +181,17 @@ class QuantizeDataHandler(DataHandler):
         return get_feature_hash_list(q_fea_vec, self.fea_QN)
 
 
-class ModelFreeQuantizeDataHandler(QuantizeDataHandler):
-    def get_em(self, rg, rg_type):
-        """get model-free empirical measure"""
-        q_fea_vec = self.quantize_fea(rg, rg_type )
-        return model_free( q_fea_vec, self.fea_QN )
+# class ModelFreeQuantizeDataHandler(QuantizeDataHandler):
+#     def get_em(self, rg, rg_type):
+#         """get model-free empirical measure"""
+#         q_fea_vec = self.quantize_fea(rg, rg_type )
+#         return model_free( q_fea_vec, self.fea_QN )
 
-class ModelBasedQuantizeDataHandler(QuantizeDataHandler):
-    def get_em(self, rg, rg_type):
-        """get model-based empirical measure"""
-        q_fea_vec = self.quantize_fea(rg, rg_type )
-        return model_based( q_fea_vec, self.fea_QN )
+# class ModelBasedQuantizeDataHandler(QuantizeDataHandler):
+#     def get_em(self, rg, rg_type):
+#         """get model-based empirical measure"""
+#         q_fea_vec = self.quantize_fea(rg, rg_type )
+#         return model_based( q_fea_vec, self.fea_QN )
 
 class FBQuantizeDataHandler(QuantizeDataHandler):
     def get_em(self, rg=None, rg_type=None):
@@ -200,177 +200,6 @@ class FBQuantizeDataHandler(QuantizeDataHandler):
         pmf = model_free( q_fea_vec, self.fea_QN )
         Pmb = model_based( q_fea_vec, self.fea_QN )
         return pmf, Pmb
-
-#######################################
-## SVM Temporal Method Handler   ######
-#######################################
-from sadit.util import Counter
-class SVMTemporalHandler(QuantizeDataHandler):
-    """Data Hanlder for SVM Temporal Detector approach. It use a set of features
-    which will be defined here"""
-    def __init__(self, data, desc=None):
-        QuantizeDataHandler.__init__(self, data, desc)
-        # self._init_data(data)
-        self.update_unique_src_ip()
-        self.large_flow_thres = 5e1
-
-    def update_unique_src_ip(self):
-        """be carefule to update unique src ip when using a new file"""
-        src_ip = self.data.get_rows('src_ip')
-        src_ip = [tuple(ip) for ip in src_ip]
-        self.unique_src_ip = list(set())
-
-    def _init_data(self, data):
-        self.data = data
-
-    def get_svm_fea_deprec(self, rg=None, rg_type=None):
-        """ suppose m is the number of unique source ip address in this data.
-        the feature is 2mx1,
-        - the first m feature is the frequency of flows with
-        each source ip address,
-        - the second m feature is the frequence of larges
-        flows whose size is > self.large_flow_thres with each source ip address"""
-        src_ip = self.data.get_rows('src_ip', rg, rg_type)
-        flow_size = self.data.get_rows('flow_size', rg, rg_type)
-        n = len(src_ip)
-        src_ip = [tuple(ip) for ip in src_ip]
-        ct = Counter(src_ip)
-        fea_total_flow = [ct[ip] for ip in self.unique_src_ip]
-
-        # import pdb;pdb.set_trace()
-        lf_src_ip = [src_ip[i] for i in xrange(n) if flow_size[i] > self.large_flow_thres]
-        ct = Counter(lf_src_ip)
-        fea_large_flow = [ct[ip] for ip in self.unique_src_ip]
-        return fea_total_flow + fea_large_flow
-
-    def get_svm_fea(self, rg=None, rg_type=None):
-        q_fea_vec = self.quantize_fea(rg, rg_type )
-        pmf = model_free( q_fea_vec, self.fea_QN )
-        # Pmb, mpmb = model_based( q_fea_vec, self.fea_QN )
-        svm_fea = pmf + [len(q_fea_vec[0])]
-        # svm_fea = [len(q_fea_vec[0])]
-        print('svm_fea, ', svm_fea)
-        return svm_fea
-
-        # return model_free
-        # ct = Counter(hash_quan_fea)
-        # q_level_num = reduce(operator.mul, self.fea_QN)
-        # svm_fea = [0] * q_level_num
-        # for k, v in ct.iteritems():
-        #     svm_fea[int(k)] = v
-        # print 'svm_fea, ', svm_fea
-        # return svm_fea
-
-class FakeDataHandler(object):
-    """ This Data Handler do nothing"""
-    def __init__(self, data, *args, **kwargs):
-        self.data = data
-
-###################################################################
-# FIXME depreciated
-###################################################################
-
-from sadit.util import np
-from .DetectorLib import quantize_state
-
-def regularize(val):
-    max_ = np.max(val)
-    min_ = np.min(val)
-    return val if (max_ == min_) else (val - min_) / (max_ - min_)
-class CombinedEM(object):
-    """Combined model-free and model-based emperical measure
-
-    list of np.array
-    """
-    def __init__(self, data=None):
-        if data is not None:
-            self.data = [(np.array(d) if d is not None else None) for d in data]
-        else:
-            self.data = None
-
-    def __add__(self, val):
-        if self.data is None:
-            self.data = [np.array(d) for d in val]
-            return self
-
-        for i in xrange(len(self.data)):
-            self.data[i] = self.data[i] + val[i]
-        return self
-
-    def __div__(self, val):
-        for i in xrange(len(self.data)):
-            self.data[i] /= val
-        return self
-
-    def quantize(self, quan_N):
-        quan_EM_list = []
-        for i in xrange(len(self.data)):
-            dat = self.data[i]
-            if dat is None:
-                quan_EM = None
-            else:
-                quan_level = quantize_state(dat.flatten(), quan_N, [0, 1])
-                quan_EM = np.array(quan_level).reshape(dat.shape)
-            quan_EM_list.append(quan_EM)
-        return CombinedEM(quan_EM_list)
-
-    def regularize(self):
-        self.data = [(regularize(d) if d is not None else None) for d in self.data]
-
-    @property
-    def mf(self):
-        return self.data[0]
-
-    @property
-    def mb(self):
-        return self.data[1], self.data[2]
-
-def flatten(val):
-    return None if val is None else val.flatten()
-
-class CombinedEMList(object):
-    def __init__(self, em_list=None):
-        self.data = [] if em_list is None else em_list
-
-    def __len__(self):
-        return len(self.data)
-
-    def __iter__(self):
-        for d in self.data:
-            yield d
-
-    def __getitem__(self, key):
-        return self.data[key]
-
-    def quantize(self, g_quan_N):
-        self.data = [d.quantize(g_quan_N) for d in self.data]
-        self.g_quan_N = g_quan_N
-
-    def append(self, em):
-        self.data.append(CombinedEM(em))
-        self.mf_shape = None if self.data[-1].mf is None else self.data[-1].mf.shape
-        self.mb_shape = None if self.data[-1].mb[0] is None else (self.data[-1].mb[0].shape, self.data[-1].mb[1].shape)
-
-    def regularize(self):
-        for d in self.data:
-            d.regularize()
-
-# class ModelFreeEM(object):
-#     def __init__(self, q_fea_vec, fea_QN):
-#         self.q_fea_vec = q_fea_vec
-#         self.fea_QN = fea_QN
-
-#     def add(self):
-#         pass
-
-#     def get_dist(self):
-#         pmf = model_free(zip(*self.q_fea_vec), self.fea_QN)
-#         return pmf
-
-# class ModelBasedEM(object):
-#     def __init__(self, fea):
-#         pass
-#     pass
 
 class GeneralizedEMHandler(DataHandler):
     """ Generalized Emperical Measure Handler
