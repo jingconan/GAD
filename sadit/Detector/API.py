@@ -6,9 +6,10 @@ from __future__ import print_function, division, absolute_import
 #######################################################
 from .StoDetector import *
 from .RobustDetector import *
-from .SVMDetector import *
+# from .SVMDetector import *
 
-from .ART.ART import ARTDetector
+
+# from .ART.ART import ARTDetector
 
 # detector_map defines correspondence between detector
 # options with detector name
@@ -19,12 +20,12 @@ detector_map = {
         # 'ada':AdaStoDetector,
         'period': PeriodStoDetector,
         'speriod': PeriodStaticDetector,
-        'mf': ModelFreeAnoDetector,
-        'mb': ModelBaseAnoDetector,
+        # 'mf': ModelFreeAnoDetector,
+        # 'mb': ModelBaseAnoDetector,
         'mfmb': FBAnoDetector,
-        'svm_fbf': SVMFlowByFlowDetector,
-        'svm_temp': SVMTemporalDetector,
-        'art': ARTDetector,
+        # 'svm_fbf': SVMFlowByFlowDetector,
+        # 'svm_temp': SVMTemporalDetector,
+        # 'art': ARTDetector,
         'gen_fb_mf':FBAnoDetector, # feature is model free emperical measure
         'gen_fb_mb':FBAnoDetector, # feature is model based emperical measure
         'robust': RobustDetector,
@@ -36,17 +37,17 @@ from .DataHandler import *
 data_handler_handle_map = {
         'robust': FBQuantizeDataHandler,
         # 'auto': QuantizeDataHandler,
-        'mf': ModelFreeQuantizeDataHandler,
-        'mb': ModelBasedQuantizeDataHandler,
+        # 'mf': ModelFreeQuantizeDataHandler,
+        # 'mb': ModelBasedQuantizeDataHandler,
         'mfmb': FBQuantizeDataHandler,
         # '2w': QuantizeDataHandler,
         'two_win': FBQuantizeDataHandler,
         # 'ada': QuantizeDataHandler,
         'period': FBQuantizeDataHandler,
         'speriod': QuantizeDataHandler,
-        'svm_temp': SVMTemporalHandler,
-        'svm_fbf':FBQuantizeDataHandler,
-        'art': FakeDataHandler,
+        # 'svm_temp': SVMTemporalHandler,
+        # 'svm_fbf':FBQuantizeDataHandler,
+        # 'art': FakeDataHandler,
 
         'gen_fb_mf':ModelFreeFeaGeneralizedEMHandler, # feature is model free emperical measure
         'gen_fb_mb':ModelBasedFeaGeneralizedEMHandler, # feature is model based emperical measure
