@@ -198,6 +198,7 @@ def quantize_state(x, nx, rg):
     return quan
 
 cache_ = dict()
+basis_cache_ = dict()
 def get_feature_hash_list(F, level):
     """ calculate the
 
@@ -213,13 +214,15 @@ def get_feature_hash_list(F, level):
     """
     # FIXME Add doctest here
     level = tuple(level)
-    # basis = np.cumprod(level)
-    basis = [1]
-    for i in xrange( len(level) - 1 ):
-        basis.append( basis[-1] * level[i] )
-
+    # basis = np.cumprod([1] + list()level)
+    basis = basis_cache_.get(level)
     if cache_.get(level) is None:
         cache_[level] = dict()
+        basis = [1]
+        for i in xrange( len(level) - 1 ):
+            basis.append( basis[-1] * level[i] )
+        basis_cache_[level] = basis
+
     res = []
     # import ipdb;ipdb.set_trace()
     for vec in itertools.izip(*F):
