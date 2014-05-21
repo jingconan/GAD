@@ -213,8 +213,9 @@ def get_feature_hash_list(F, level):
     """
     # FIXME Add doctest here
     level = tuple(level)
+    # import ipdb;ipdb.set_trace()
     try:
-        return [cache_[level][vec] for vec in itertools.izip(*F)]
+        return [cache_[level][tuple(vec)] for vec in itertools.izip(*F)]
     except KeyError:
         # import ipdb;ipdb.set_trace()
         basis = [1]

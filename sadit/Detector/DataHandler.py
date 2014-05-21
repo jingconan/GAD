@@ -9,6 +9,8 @@ from .ClusterAlg import KMedians
 from .DetectorLib import vector_quantize_states, model_based, model_free
 from sadit.util import DF, NOT_QUAN, QUAN
 from sadit.util import abstract_method, FetchNoDataException, DataEndException
+# from scipy.cluster.vq import whiten
+import numpy as np
 
 ##############################################################
 ####                  Interface Class                   ######
@@ -38,7 +40,52 @@ def long_to_dotted(ip):
 
 from .DetectorLib import get_feature_hash_list
 from sadit.util import izip
+
 class QuantizeDataHandler(DataHandler):
+    def __init__(self, data, desc):
+        super(QuantizeDataHandler, self).__init__(data, desc)
+        self._init_data(data)
+        fea_option = desc['fea_option']
+        self.fea_option  = fea_option
+        self.direct_fea_list = fea_option.keys()
+        self.fea_QN, self.global_fea_range = zip(*fea_option.values())
+        self.global_fea_range = np.array(self.global_fea_range)
+
+    def _init_data(self, data):
+        self.data = data
+
+    def get_em(self, rg=None, rg_type='time'):
+        abstract_method()
+
+    def get_fea_list(self):
+        return self.fea_list
+
+    def get_fea_slice(self, rg=None, rg_type=None):
+        direct_fea_vec = self.data.get_rows(self.direct_fea_list, rg, rg_type)
+        if direct_fea_vec is None:
+            raise FetchNoDataException("Didn't find any data in this range")
+        return direct_fea_vec
+
+    def quantize_fea(self, rg=None, rg_type=None):
+        """get quantized features for part of the flows"""
+        fea_vec = self.get_fea_slice(rg, rg_type)
+        fea_vec = fea_vec.view('<f8').reshape(-1, len(fea_vec.dtype))
+
+        fr = self.global_fea_range
+        quan_len = (fr[:, 1] - fr[:, 0]) / self.fea_QN
+        min_val = np.outer(np.ones(fea_vec.shape[0],), fr[:, 0])
+        q_fea_vec = (fea_vec - min_val) / quan_len
+        q_fea_vec = np.floor(q_fea_vec)
+        #FIXME check when feature is larger than the range
+        return q_fea_vec.T
+
+    def hash_quantized_fea(self, rg, rg_type):
+        q_fea_vec = self.quantize_fea(rg, rg_type)
+        return get_feature_hash_list(q_fea_vec, self.fea_QN)
+
+
+
+class IPDataHandler(QuantizeDataHandler):
     """ Cluster and IP address and Quantize the feature in the Data
 
     Parameters
@@ -72,15 +119,6 @@ class QuantizeDataHandler(DataHandler):
         self._cluster_src_ip(fea_option['cluster'])
         self._set_fea_range()
 
-    def _init_data(self, data):
-        self.data = data
-
-    # def _to_dotted(self, ip):
-    #     if isinstance(ip, str):
-    #         return tuple( [int(v) for v in ip.rsplit('.')] )
-    #     elif isinstance(ip, long):
-    #         return long_to_dotted(int(ip))
-
     def _cluster_src_ip(self, cluster_num):
         src_ip_int_vec_tmp = self.data.get_rows('src_ip')
         src_ip_vec = [tuple(x) for x in src_ip_int_vec_tmp]
@@ -93,14 +131,6 @@ class QuantizeDataHandler(DataHandler):
         dist_to_center = [DF( unique_ip[i], center_pt[ unique_src_cluster[i] ]) for i in xrange(len(unique_ip))]
         self.dist_to_center_map = dict(zip(unique_ip, dist_to_center))
 
-    # def get_min_max(self, feas):
-    #     min_vec = []
-    #     max_vec = []
-    #     for fea in feas:
-    #         dat = self.data.get_rows(fea)
-    #         min_vec.append(min(dat))
-    #         max_vec.append(max(dat))
-    #     return min_vec, max_vec
 
     def _set_fea_range(self):
         """set the global range for the feature list, used for quantization"""
@@ -139,46 +169,10 @@ class QuantizeDataHandler(DataHandler):
             fea_vec.append( [self.cluster_map[tuple(ip)],
                 self.dist_to_center_map[tuple(ip)]] + [float(x) for x in direct_fea])
 
-        # for i in xrange(len(src_ip)):
-            # ip = src_ip[i]
-            # fea_vec.append( [self.cluster_map[ip], self.dist_to_center_map[ip]] + [float(x) for x in direct_fea_vec[i]])
-
-        # min_vec = self.data.get_min(self.direct_fea_list, rg, rg_type)
-        # max_vec = self.data.get_max(self.direct_fea_list, rg, rg_type)
-
-        # dist_to_center_vec = [self.dist_to_center_map[ip] for ip in src_ip]
-        # min_dist_to_center = min(dist_to_center_vec)
-        # max_dist_to_center = max(dist_to_center_vec)
-
-        # fea_range = [
-        #         [0, min_dist_to_center] + min_vec,
-        #         [self.fea_option['cluster']-1, max_dist_to_center] + max_vec,
-        #         ]
-
-        # quan_flag specify whether a data need to be quantized or not.
         self.quan_flag = [QUAN] * len(self.fea_option.keys())
         self.quan_flag[0] = NOT_QUAN
         # return fea_vec, fea_range
         return fea_vec
-
-    def get_em(self, rg=None, rg_type=None):
-        abstract_method()
-        # """get empirical measure"""
-        # q_fea_vec = self.quantize_fea(rg, rg_type )
-        # pmf = model_free( q_fea_vec, self.fea_QN )
-        # Pmb, mpmb = model_based( q_fea_vec, self.fea_QN )
-        # return pmf, Pmb, mpmb
-
-    def quantize_fea(self, rg=None, rg_type=None):
-        """get quantized features for part of the flows"""
-        # fea_vec, fea_range = self.get_fea_slice(rg, rg_type)
-        fea_vec = self.get_fea_slice(rg, rg_type)
-        q_fea_vec = vector_quantize_states(izip(*fea_vec), self.fea_QN, izip(*self.global_fea_range), self.quan_flag)
-        return q_fea_vec
-
-    def hash_quantized_fea(self, rg, rg_type):
-        q_fea_vec = self.quantize_fea(rg, rg_type)
-        return get_feature_hash_list(q_fea_vec, self.fea_QN)
 
 
 # class ModelFreeQuantizeDataHandler(QuantizeDataHandler):
