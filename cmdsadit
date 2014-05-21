@@ -64,7 +64,7 @@ args, res_args = parser.parse_known_args()
 ###      Print Help Message
 #####################################################
 def print_exper_help(exper, res_args=[]):
-    exec('from Experiment.%s import %s'%(exper, exper))
+    exec('from %s.Experiment.%s import %s'%(PKG, exper, exper))
     argv = ['-h'] + res_args
     exper = locals()[exper](argv)
 
