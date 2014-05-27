@@ -169,14 +169,9 @@ class MEM_DiskFile(Data):
             max_vec.append(max(dat))
         return min_vec, max_vec
 
-
-try:
-    import pandas
-except:
-    pandas = False
-
 class CSVFile(MEM_DiskFile):
     def _init(self):
+        import pandas
         self.table = pandas.io.parsers.read_csv(self.f_name)
         self.row_num = self.table.shape[0]
         self.t = self.table.get('time')

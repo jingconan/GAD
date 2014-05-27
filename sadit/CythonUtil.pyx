@@ -29,7 +29,7 @@ cdef extern from "stdio.h":
     # int sscanf   (const_char *S, const_char *TEMPLATE, ...)
     # int printf   (const_char *TEMPLATE, ...)
 
-DEF MAX_ROW = 3000
+DEF MAX_ROW = 5000
 
 def c_parse_records_fs(const_char *f_name):
     cdef int node_id
@@ -37,7 +37,7 @@ def c_parse_records_fs(const_char *f_name):
     cdef char[10] node
     cdef int duration
     cdef FILE* cfile
-    cdef double start_time, end_time
+    cdef long long start_time, end_time
     cdef double t3
     cdef int s1, s2, s3, s4
     cdef int d1, d2, d3, d4
@@ -82,7 +82,7 @@ def c_parse_records_fs(const_char *f_name):
         if value == EOF:
             break
         elif value != 18:
-            raise Exception("value = " + str(value))
+            raise Exception("Only read [%i] values in line [%i]." %(value, i))
 
         flows[i] = (start_time, end_time, (s1, s2, s3, s4), port1, 
                 (d1, d2, d3, d4), port2, prot, node, flow_size, duration)
