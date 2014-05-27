@@ -111,7 +111,7 @@ class MEM_DiskFile(Data):
     def _init(self):
         self.parse()
 
-        self.t = np.array([t for t in self.get_rows('start_time')])
+        self.t = np.array([t[0] for t in self.get_rows(['start_time'])])
         t_idx = np.argsort(self.t)
         self.table = self.table[t_idx]
         self.t = self.t[t_idx]
@@ -145,11 +145,13 @@ class MEM_DiskFile(Data):
         return sp, ep
 
     def get_rows(self, fields=None, rg=None, rg_type=None):
+        # no long support accessing rows using string directly, fields must be
+        # list
+        assert(not isinstance(fields, str))
         if fields is None:
             fields = list(self.FIELDS)
         sp, ep = self.get_where(rg, rg_type)
         rows = self.table[sp:ep][fields]
-        rows = rows.view('<f8').reshape(-1, len(fea_vec.dtype))
         return rows
 
     def get_index(self, flows_t):
@@ -221,14 +223,16 @@ class MEM_FS(MEM_DiskFile):
         ('duration', np.float64, 1),
         ])
 
-    def parse(self):
-        try: # try optimized parse method written in cython first
-            self.table, self.row_num = c_parse_records_fs(self.f_name)
-        except Exception as e:
-            print('-' * 30)
-            print(e)
-            print('-' * 30)
-            super(MEM_FS, self).parse()
+    #FIXME the c_parse_records_fs will fail if the timestamp is very huge
+    # def parse(self):
+    #     try: # try optimized parse method written in cython first
+    #         self.table, self.row_num = c_parse_records_fs(self.f_name)
+    #     except Exception as e:
+    #         print('-' * 30)
+    #         print(e)
+    #         print('Please increase the MAXROW in sadit/CythonUtil.pyx')
+    #         print('-' * 30)
+    #         super(MEM_FS, self).parse()
 
 import datetime
 import time

@@ -49,7 +49,7 @@ class QuantizeDataHandler(DataHandler):
         self.fea_option  = fea_option
         self.direct_fea_list = fea_option.keys()
         self.fea_QN, self.global_fea_range = zip(*fea_option.values())
-        self.global_fea_range = np.array(self.global_fea_range)
+        self.global_fea_range = np.array(self.global_fea_range, dtype=np.float)
 
     def _init_data(self, data):
         self.data = data
@@ -62,16 +62,14 @@ class QuantizeDataHandler(DataHandler):
 
     def get_fea_slice(self, rg=None, rg_type=None):
         direct_fea_vec = self.data.get_rows(self.direct_fea_list, rg, rg_type)
-        if direct_fea_vec is None:
+        if direct_fea_vec is None or len(direct_fea_vec) == 0:
             raise FetchNoDataException("Didn't find any data in this range")
         return direct_fea_vec
 
     def quantize_fea(self, rg=None, rg_type=None):
         """get quantized features for part of the flows"""
         fea_vec = self.get_fea_slice(rg, rg_type)
-        # import ipdb;ipdb.set_trace()
-        # fea_vec = fea_vec.view('<f8').reshape(-1, len(fea_vec.dtype))
-
+        fea_vec = np.array(fea_vec.tolist())
         fr = self.global_fea_range
         quan_len = (fr[:, 1] - fr[:, 0]) / self.fea_QN
         min_val = np.outer(np.ones(fea_vec.shape[0],), fr[:, 0])
