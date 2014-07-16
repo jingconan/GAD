@@ -1,9 +1,4 @@
-# EXPORT_ABNORMAL_FLOW = True
-# EXPORT_ABNORMAL_FLOW = False
-# EXPORT_ABNORMAL_FLOW_PARA_FILE = ROOT + '/Share/ano_flow_para.txt'
-# EXPORT_ABNORMAL_FLOW_PARA_FILE = ROOT + '/Share/ano_flow_para.txt'
-# EXPORT_ABNORMAL_FLOW_FILE = ROOT + '/Simulator/abnormal_n0_flow.txt'
-ROOT = '/home/wangjing/Dropbox/Research/sadit/'
+ROOT = ''
 
 #################################
 ##   Parameters For Detector  ###

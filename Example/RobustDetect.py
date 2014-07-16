@@ -1,4 +1,4 @@
-ROOT = '/home/wangjing/Dropbox/Research/sadit/'
+ROOT = ''
 
 import numpy as np
 #################################

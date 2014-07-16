@@ -7,7 +7,7 @@ import sys
 sys.path.append('../')
 sys.path.append('../..')
 from Detector import data_map
-from sadit.util import tables
+from gad.util import tables
 
 def sizeof_fmt(num):
     for x in ['bytes','KB','MB','GB','TB']:

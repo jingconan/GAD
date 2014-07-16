@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from __future__ import print_function, division, absolute_import
 import numpy as np
-from sadit.Detector.DataHandler import QuantizeDataHandler
-from sadit.Detector.Data import MEM_FS
-from sadit.util import zload, zdump
+from gad.Detector.DataHandler import QuantizeDataHandler
+from gad.Detector.Data import MEM_FS
+from gad.util import zload, zdump
 
 def identify_type(hist, bins, alpha1, alpha2):
     n = len(hist)

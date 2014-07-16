@@ -2,8 +2,8 @@
 """  Run Probability Law Identification
 """
 from __future__ import print_function, division, absolute_import
-from sadit.util import np, zload, plt
-from sadit.Detector.PLRefine import HeuristicRefinePL
+from gad.util import np, zload, plt
+from gad.Detector.PLRefine import HeuristicRefinePL
 import argparse
 import sys
 
