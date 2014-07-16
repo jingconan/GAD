@@ -1,6 +1,7 @@
+from __future__ import print_function, division, absolute_import
 import argparse
 import os
-from sadit.util import abstract_method, load_para
+from ..util import abstract_method, load_para
 
 # ROOT = os.environ.get('SADIT_ROOT')
 

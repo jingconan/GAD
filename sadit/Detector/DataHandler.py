@@ -7,8 +7,8 @@ __email__ = "wangjing@bu.edu"
 
 from .ClusterAlg import KMedians
 from .DetectorLib import vector_quantize_states, model_based, model_free
-from sadit.util import DF, NOT_QUAN, QUAN
-from sadit.util import abstract_method, FetchNoDataException, DataEndException
+from ..util import DF, NOT_QUAN, QUAN
+from ..util import abstract_method, FetchNoDataException, DataEndException
 # from scipy.cluster.vq import whiten
 import numpy as np
 
@@ -39,7 +39,7 @@ def long_to_dotted(ip):
     return [int(val) for val in ip_addr.rsplit('.')]
 
 from .DetectorLib import get_feature_hash_list
-from sadit.util import izip
+from ..util import izip
 
 class QuantizeDataHandler(DataHandler):
     def __init__(self, data, desc):

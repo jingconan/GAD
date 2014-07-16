@@ -2,7 +2,7 @@
 """ A library of utility function that will be used by detectors
 """
 from __future__ import print_function, division, absolute_import
-from sadit.util import np, Counter
+from ..util import np, Counter
 import operator
 import itertools
 
@@ -71,7 +71,7 @@ def adjust_mat(P):
     return np.array(adjust_pv(P.ravel(), EPS)).reshape(shape)
 
 # DF = lambda x,y:abs(x[0]-y[0]) * (256**3) + abs(x[1]-y[1]) * (256 **2) + abs(x[2]-y[2]) * 256 + abs(x[3]-y[3])
-from sadit.util import DF
+from ..util import DF
 
 EPS = 1e-20
 from math import log

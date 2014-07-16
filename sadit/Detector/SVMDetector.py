@@ -10,8 +10,8 @@ import argparse
 
 from .mod_util import plot_points
 from .Base import BaseDetector
-from sadit.util import save_csv, plt
-from sadit.util import zdump, zload
+from ..util import save_csv, plt
+from ..util import zdump, zload
 
 def write_svm_data_file(label, fea, f_name):
     fid = open(f_name, 'w')
@@ -274,7 +274,7 @@ class SVMFlowByFlowDetector(SVMDetector):
         # if pic_show: plt.show()
         # if pic_name: plt.savefig(pic_name)
 
-from sadit.util import DataEndException, FetchNoDataException, np
+from ..util import DataEndException, FetchNoDataException, np
 from .PCA import PCA
 from .Base import WindowDetector
 class SVMTemporalDetector(SVMDetector, WindowDetector):

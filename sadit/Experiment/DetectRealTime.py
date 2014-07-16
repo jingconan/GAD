@@ -3,8 +3,8 @@ from __future__ import print_function, division, absolute_import
 """ Default experimenet, will simply detect the flow data
 """
 import os
-from sadit.Detector import detect
-from sadit.util import NetworkLogger
+from ..Detector import detect
+from ..util import NetworkLogger
 
 from .Detect import Detect
 

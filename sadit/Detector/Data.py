@@ -4,8 +4,8 @@
         2. MySQL database. The base class is the :class:`MySQLDatabase`.
 """
 from __future__ import print_function, division, absolute_import
-from sadit.util import abstract_method
-from sadit.util import Find, DataEndException
+from ..util import abstract_method
+from ..util import Find, DataEndException
 class Data(object):
     """abstract base class for data. Data class deals with any implementation
     details of the data. it can be a file, a sql data base, and so on, as long
@@ -69,8 +69,8 @@ class Data(object):
 
 
 import pyximport; pyximport.install()
-from sadit.util import np
-from sadit.CythonUtil import IP, parse_records, c_parse_records_fs
+from ..util import np
+from ..CythonUtil import IP, parse_records, c_parse_records_fs
 # IP = lambda x:tuple(int(v) for v in x.rsplit('.'))
 class MEM_DiskFile(Data):
     """ abstract base class for hard disk file The flow file into MEMory as a
@@ -225,7 +225,7 @@ class MEM_FS(MEM_DiskFile):
     #     except Exception as e:
     #         print('-' * 30)
     #         print(e)
-    #         print('Please increase the MAXROW in sadit/CythonUtil.pyx')
+    #         print('Please increase the MAXROW in CythonUtil.pyx')
     #         print('-' * 30)
     #         super(MEM_FS, self).parse()
 
@@ -387,7 +387,7 @@ class MEM_Xflow(MEM_DiskFile):
 
 
 """ PyTables Related """
-from sadit.util import tables
+from ..util import tables
 class PT_Data(MEM_DiskFile):
     """  Pytables format. (HDF5 format).
     Group name: data
@@ -489,7 +489,7 @@ class MySQLDatabase(Data):
 ####  more information (trace 8)                        ######
 ##############################################################
 
-from sadit.util import mysql, FIELD_TYPE
+from ..util import mysql, FIELD_TYPE
 
 def long_to_IP(n):
     "convert long int to IP format with a tuple of four ints"

@@ -7,8 +7,8 @@ from .Detect import Detect
 # import copy
 import os
 import matplotlib.pyplot as plt
-from Detector import detector_plot_dump
-from sadit.util import zdump, zload
+from ..Detector import detector_plot_dump
+from ..util import zdump, zload
 
 class DetectCompare(Detect):
     """ Compare Different methods and plot the result in

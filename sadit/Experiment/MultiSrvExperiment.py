@@ -2,10 +2,12 @@
 """ (experimental) Generate the traffic for multiserver case and
 test the alogirithm
 """
+from __future__ import print_function, division, absolute_import
 import sys
 import numpy as np
-from Detector import detect
-from Detect import Detect
+from ..Detector import detect
+from .Detect import Detect
+from ..util import get_diff_jpdf
 
 class MultiSrvExperiment(Detect):
     def __init__(self, settings):
@@ -49,7 +51,6 @@ class MultiSrvExperiment(Detect):
                                     [0.01, 0.01, 0.01, 0.01],
                                     [0.01, 0.01, 0.01, 0.01],
                                     ])
-        from sadit.util import get_diff_jpdf
         self.ano_joint_dist =  get_diff_jpdf(self.joint_dist, 4)
         assert( not np.array_equal(self.ano_joint_dist, self.joint_dist) )
         # self.joint_dist = np.array([

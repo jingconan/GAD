@@ -10,9 +10,9 @@ __status__ = "Development"
 import os
 from math import log
 
-from sadit.util import DataEndException, FetchNoDataException, abstract_method
-from sadit.util import save_csv, plt
-from sadit.util import zdump, zload
+from ..util import DataEndException, FetchNoDataException, abstract_method
+from ..util import save_csv, plt
+from ..util import zdump, zload
 
 from .DetectorLib import I1, I2
 from .mod_util import plot_points

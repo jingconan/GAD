@@ -4,10 +4,9 @@ from __future__ import print_function, division, absolute_import
 """
 import os
 import copy
-from sadit.util import update_not_none
-from sadit.Detector import detect
-from sadit.Detector.API import print_detector_help
-
+from ..util import update_not_none, get_help_docs
+from ..Detector import detect, print_detector_help, \
+    detector_map, data_map
 from .BaseExper import BaseExper
 
 class Detect(BaseExper):
@@ -42,8 +41,6 @@ class Detect(BaseExper):
         #         type=load_para,
         #         help="""config file with default arguments for detector""")
 
-        from sadit.Detector.API import detector_map, data_map
-        from sadit.util import get_help_docs
         parser.add_argument('-m', '--method', default=None,
                 help="""--method [method] will specify the method to use.
                 Avaliable options are: [%s]. If you want to compare the

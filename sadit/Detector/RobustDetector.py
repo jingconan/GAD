@@ -3,8 +3,8 @@
 from __future__ import print_function, division, absolute_import
 import itertools, copy
 # import cPickle as pk
-from sadit.util import zload
-from sadit.util import del_none_key, np
+from ..util import zload
+from ..util import del_none_key, np
 
 from . import StoDetector
 from .DetectorLib import I1, I2

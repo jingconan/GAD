@@ -8,7 +8,7 @@ from random import sample
 
 
 ## {{{ http://code.activestate.com/recipes/577661/ (r2)
-from sadit.util import queue
+from ..util import queue
 class MedianHeap:
     def __init__(self, numbers = None):
         self.median = None

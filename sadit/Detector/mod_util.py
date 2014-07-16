@@ -1,7 +1,7 @@
 """ Module level utility functions
 """
 from __future__ import print_function, division, absolute_import
-from sadit.util import plt, np
+from ..util import plt, np
 
 def find_seg(flag):
     """return (start and end point and level) of each segment"""
