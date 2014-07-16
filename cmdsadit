@@ -9,26 +9,13 @@ PKG = 'sadit'
 # if ROOT is None:
 #     print('please set <SADIT_ROOT> variable in bash')
 #     sys.exit()
-# if not ROOT.endswith('sadit'):
-#     print('please set <SADIT_ROOT> path variable correctly; '
-#           'Please change the name of the <ROOT> folder to sadit. Other name '
-#             'will cause import problem')
-#     sys.exit()
-
-# os.environ['EXPORT_ABNORMAL_FLOW_PARA_FILE'] = ROOT + '/Share/ano_flow_para.txt'
-# os.environ['SVM_FOLDER'] = ROOT + '/tools/libsvm-3.12'
-# sys.path.insert(0, ROOT)
-# sys.path.insert(0, ROOT.rstrip('sadit'))
-
 # Get experiment options
 exper_ops = [f_name[:-3] for f_name in os.listdir(PKG + '/Experiment/')
              if f_name.lower().endswith('py') and not f_name.startswith('__')]
 
 # from Detector.API import detector_map
 
-parser = argparse.ArgumentParser(description='sadit', add_help=False)
-# parser = argparse.ArgumentParser(description='sadit')
-# parser.add_argument('-e', '--experiment', default='DetectExper')
+parser = argparse.ArgumentParser(description='gad', add_help=False)
 
 # parser.add_argument('-c', '--config', default=None,
 #         help="""a configuration script describing the network network, normal
@@ -40,7 +27,7 @@ parser = argparse.ArgumentParser(description='sadit', add_help=False)
 #         %(' | '.join(exper_ops)))
 
 parser.add_argument('experiment', default=None, nargs='?',
-        help="""print ./sadit <exper> -h for help of a experiment
+        help="""print ./cmdsadit <exper> -h for help of a experiment
         Avaliable experiments are [%s]"""
         %(' | '.join(exper_ops)))
 
@@ -100,7 +87,7 @@ def main(args, res_args):
         exper.run()
     except KeyError:
         print('Probabably you forget to specify some options?'
-                ' run sadit <exper> -h for more information.')
+                ' run cmdsadit <exper> -h for more information.')
         import traceback
         tb = traceback.format_exc()
         print(tb)
