@@ -1,6 +1,6 @@
-from .DetectBatch import DetectBatch
-from .DetectCompare import DetectCompare
-from .Detect import Detect
-from .DetectRealTime import DetectRealTime
-from .Eval import Eval
-from .MultiSrvExperiment import MultiSrvExperiment
+from .DetectBatch import DetectBatch as detectbatch
+from .DetectCompare import DetectCompare as detectcompare
+from .Detect import Detect as detect
+from .DetectRealTime import DetectRealTime as detectrealtime
+from .Eval import Eval as eval
+from .MultiSrvExperiment import MultiSrvExperiment as multisrvexperiment
