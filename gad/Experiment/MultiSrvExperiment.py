@@ -74,12 +74,12 @@ class MultiSrvExperiment(Detect):
         self.four_flow_types()
 
         # ano_joint_dist = get_diff_jpdf(joint_dist, 5)
-        print 'marginal dist for orig variable 1, ', np.sum(self.joint_dist, 0)
-        print 'marginal dist for orig variable 2, ', np.sum(self.joint_dist, 1)
-        print 'marginal dist for ano variable 1, ', np.sum(self.ano_joint_dist, 0)
-        print 'marginal dist for ano variable 2, ', np.sum(self.ano_joint_dist, 1)
-        print 'ano_joint_dist, ', self.ano_joint_dist
-        print 'ano_sum, ', np.sum(self.ano_joint_dist)
+        # print 'marginal dist for orig variable 1, ', np.sum(self.joint_dist, 0)
+        # print 'marginal dist for orig variable 2, ', np.sum(self.joint_dist, 1)
+        # print 'marginal dist for ano variable 1, ', np.sum(self.ano_joint_dist, 0)
+        # print 'marginal dist for ano variable 2, ', np.sum(self.ano_joint_dist, 1)
+        # print 'ano_joint_dist, ', self.ano_joint_dist
+        # print 'ano_sum, ', np.sum(self.ano_joint_dist)
         assert( abs( np.sum(self.ano_joint_dist) - 1) < 1e-3)
         assert(not np.array_equal(self.ano_joint_dist, self.joint_dist))
 
