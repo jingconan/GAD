@@ -2,6 +2,8 @@
 """  Run Probability Law Identification
 """
 from __future__ import print_function, division, absolute_import
+import sys
+sys.path.insert(0, '..')
 from gad.util import np, zload, plt
 from gad.Detector.PLRefine import HeuristicRefinePL
 import argparse
