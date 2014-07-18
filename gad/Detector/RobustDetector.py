@@ -215,22 +215,23 @@ class RobustDetector(StoDetector.FBAnoDetector):
 
     def init_parser(self, parser):
         super(RobustDetector, self).init_parser(parser)
-        parser.add_argument('--ref_scheck', default=None, type=str,
-                help="""['dump', 'load']. whether to load the precomputed
-                reference self check data or calculate and dump it""")
+        parser.add_argument('-r', '--ref_scheck', default=None, type=str,
+                help="""['dump <file>', 'load <file>']. whether to load the precomputed
+                reference self check data or calculate and dump it. If <file> is
+                not specfied, its default value is
+                "desc['dump_folder']/PLManager_scheck.pk" """)
 
         parser.add_argument('--lamb', default=None, type=float,
                 help="""upbound for nominal cross entropy, if lamb=0, disable
                 Probability Law Identification""")
-
-        # parser.add_argument('--ref_scheck_op', type=str,
-                # help="""the reference data operation""")
 
     def detect(self, data_file, ref_file=None):
         if ref_file is None:
             raise Exception('reference file must be specified for robust '
             'detector')
         register_info = self.desc['register_info']
+        ref_scheck = self.desc['ref_scheck']
+        lamb = self.desc['lamb']
 
         self.plm = PLManager(ref_file)
 
@@ -240,20 +241,25 @@ class RobustDetector(StoDetector.FBAnoDetector):
 
         self.ref_pool = self.plm.process_data()
 
-        #FIXME Need to clean these code later
-        lamb = self.desc['lamb']
         self.PL_enable = None
         if lamb > 0: # enable Probability Law Identification
-            rs_file = self.desc['dump_folder'] + '/PLManager_scheck.pk'
-            if self.desc['ref_scheck'] == 'dump':
+            get_filepath = lambda s: ' '.join(s.split()[1:])
+            rs_file = get_filepath(ref_scheck)
+
+            # for backward compatability
+            if not rs_file and self.desc.get('dump_folder'):
+                rs_file = self.desc['dump_folder'] + 'PLManager_scheck.pk'
+
+            if ref_scheck.startswith('dump'):
                 StoDetector.FBAnoDetector.detect(self, ref_file, ref_file)
                 ref_I_rec = self.record_data['I_rec']
                 self.dump(rs_file)
                 self._init_record()
-            else:
-                # with open(rs_file, 'r') as f: data = pk.load(f)
+            elif ref_scheck.startswith('load'):
                 data = zload(rs_file)
                 ref_I_rec = data['I_rec']
+            else:
+                raise Exception('unknown ref_scheck operation')
 
             self.PL_enable = self.plm.select(ref_I_rec, lamb)
             if self.PL_enable[0] is None or self.PL_enable[1] is None:
