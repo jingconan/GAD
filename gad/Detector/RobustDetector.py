@@ -225,6 +225,11 @@ class RobustDetector(StoDetector.FBAnoDetector):
                 help="""upbound for nominal cross entropy, if lamb=0, disable
                 Probability Law Identification""")
 
+        parser.add_argument('--ref_data', default=None, type=str,
+                help="""name for reference file""")
+
+
+
     def detect(self, data_file, ref_file=None):
         if ref_file is None:
             raise Exception('reference file must be specified for robust '
