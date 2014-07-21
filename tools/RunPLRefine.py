@@ -9,6 +9,14 @@ from gad.Detector.PLRefine import HeuristicRefinePL
 import argparse
 import sys
 
+try:
+    plt.rcParams['ps.useafm'] = True
+    plt.rcParams['pdf.use14corefonts'] = True
+    plt.rcParams['text.usetex'] = True
+except:
+    print("plot system does't support type 1 fonts")
+    pass
+
 def mplot(x, mat):
     m, n = mat.shape
     # linestyles = ['_', '-', '--', ':', '-.']
