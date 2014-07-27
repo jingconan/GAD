@@ -8,14 +8,13 @@ __email__ = "wangjing@bu.edu"
 __status__ = "Development"
 
 import os
-from math import log
 
 from ..util import DataEndException, FetchNoDataException, abstract_method
 from ..util import save_csv, plt
 from ..util import zdump, zload
 
 from .DetectorLib import I1, I2
-from .mod_util import plot_points
+from .mod_util import plot_points, ProgressBar, hoeffding_rule
 from .Base import WindowDetector
 
 
@@ -65,6 +64,7 @@ class StoDetector (WindowDetector):
     def __init__(self, desc):
         self.desc = desc
         self.record_data = dict(entropy=[], winT=[], threshold=[], em=[])
+        self.progress_bar = ProgressBar(width=50)
 
     def get_em(self, rg, rg_type):
         """abstract method. Get empirical measure,
@@ -100,7 +100,7 @@ class StoDetector (WindowDetector):
                 help='entropy threshold to determine the anomaly, has \
                 higher priority than hoeff_far')
 
-        parser.add_argument('--ccoef', default=30.0, type=float,
+        parser.add_argument('--ccoef', default=0.0, type=float,
                 help="""correction coefficient for calculat threshold using hoeffding rule.
                 hoeffding threshold is only a asymotical result. An O(n) linear term has been
                 abandon during the analysis, however, it practice, this term is important. You
@@ -183,88 +183,84 @@ class StoDetector (WindowDetector):
             i += 1
             if max_detect_num and i > max_detect_num:
                 break
-            if rg_type == 'time' : print('time: %f' %(time))
-            else: print('flow: %s' %(time))
-
             try:
                 self.rg = [time, time+win_size] # For two window method
-                em = self.data_file.get_em(rg=[time, time+win_size], rg_type=rg_type)
+                em = self.data_file.get_em(rg=self.rg, rg_type=rg_type)
                 entropy = self.I(em, norm_em=self.norm_em)
-                self.record( entropy=entropy, winT = time, threshold = 0, em=em)
+                flow_num = self.get_flow_num_between(self.rg, rg_type)
+                threshold = self.get_threshold(flow_num)
+                self.record(entropy=entropy, winT=time,
+                            threshold=threshold, em=em)
+
+                alarm_num = sum([1 for e in entropy if e >= threshold])
+                marker = '.' if alarm_num == 0 else str(alarm_num)
+                self.progress_bar.update(i-1, time, marker)
             except FetchNoDataException:
                 print('there is no data to detect in this window')
             except DataEndException:
-                print('reach data end, break')
+                print('\nreach data end, break')
                 break
 
             time += interval
 
         self.detect_num = i - 1
-        self.save_addi_info()
-
-        return self.record_data
-
-    def save_addi_info(self, **kwargs):
-        """  save additional information"""
-        # get the threshold:
-        if self.desc.get('entropy_th') is not None:
-            self.record_data['threshold'] = [self.desc['entropy_th']] * self.detect_num
-        elif self.desc.get('hoeff_far') is not None:
-            self.record_data['threshold'] = self.get_hoeffding_threshold(self.desc['hoeff_far'])
-        else:
-            self.record_data['threshold'] = None
+        # self.save_addi_info()
 
         # record the parameters
         self.record_data['desc'] = dict((k, v) \
                 for k, v in self.desc.iteritems() if is_basic_type(v))
 
-    def hoeffding_rule(self, n, false_alarm_rate):
-        """ hoeffding rule with linear correction term
+        return self.record_data
 
-        Parameters:
-        --------------
-        n : int
-            Number of flows in the window
-        false_alarm_rate : float
-            false alarm rate
+    def get_threshold(self, flow_num):
+        entropy_th = self.desc.get('entropy_th')
+        if entropy_th:
+            return entropy_th
+        hoeff_far = self.desc.get('hoeff_far')
+        if hoeff_far:
+            return hoeffding_rule(flow_num, hoeff_far, self.desc['ccoef'])
 
-        Returns
-        --------------
-        ht : float
-            hoeffding threshold
+    # def save_addi_info(self, **kwargs):
+    #     """  save additional information"""
+    #     if self.desc.get('entropy_th') is not None:
+    #         self.record_data['threshold'] = [self.desc['entropy_th']] * self.detect_num
+    #     elif self.desc.get('hoeff_far') is not None:
+    #         self.record_data['threshold'] = self.get_hoeffding_threshold(self.desc['hoeff_far'])
+    #     else:
+    #         self.record_data['threshold'] = None
 
 
-        """
-        # return -1.0 / n * log(false_alarm_rate) + self.desc['ccoef'] * log(n) / n
-        return -1.0 / n * log(false_alarm_rate) + self.desc['ccoef'] / n
+    # def get_hoeffding_threshold(self, false_alarm_rate):
+    #     """calculate the threshold of hoeffiding rule,
 
-    def get_hoeffding_threshold(self, false_alarm_rate):
-        """calculate the threshold of hoeffiding rule,
+    #     Parameters:
+    #     ---------------
+    #     false_alarm_rate : float
+    #         false alarm rate
 
-        Parameters:
-        ---------------
-        false_alarm_rate : float
-            false alarm rate
+    #     Returns
+    #     ---------------
+    #     res : list
+    #         list of thresholds for each window.
 
-        Returns
-        ---------------
-        res : list
-            list of thresholds for each window.
+    #     Notes:
+    #     ----------------
+    #     :math: `threshold = -1 / |G| log(epsilon)` where |G| is the number of flows in
+    #     the window and `epsilon` is the false alarm_rate
 
-        Notes:
-        ----------------
-        :math: `threshold = -1 / |G| log(epsilon)` where |G| is the number of flows in
-        the window and `epsilon` is the false alarm_rate
+    #     """
+    #     res = []
+    #     for i in xrange(self.detect_num):
+    #         flow_seq = self._get_flow_seq(i)
+    #         flow_num_in_win = flow_seq[1] - flow_seq[0] + 1
+    #         threshold = hoeffding_rule(flow_num_in_win, false_alarm_rate)
+    #         res.append(threshold)
 
-        """
-        res = []
-        for i in xrange(self.detect_num):
-            flow_seq = self._get_flow_seq(i)
-            flow_num_in_win = flow_seq[1] - flow_seq[0] + 1
-            threshold = self.hoeffding_rule(flow_num_in_win, false_alarm_rate)
-            res.append(threshold)
+    #     return res
 
-        return res
+    def get_flow_num_between(self, rg, rg_type):
+        st, ed = self.data_file.data.get_where(rg, rg_type)
+        return ed - st + 1
 
     def _get_flow_seq(self, win_idx):
         """Get the starting and ending sequence number of all flows in this window

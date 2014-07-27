@@ -103,3 +103,41 @@ def plot_points(X, Y, threshold=None,  pic_show=False,
     if pic_show: plt.show()
 
 
+import sys
+class ProgressBar(object):
+    def __init__(self, width=10, head_formatter='%04d'):
+        self.width = width
+        self.head_formatter = head_formatter
+
+    def update(self, idx, name='', symb='.'):
+        if (idx % self.width == 0):
+            sys.stdout.write(('\n' + self.head_formatter) % (name))
+            sys.stdout.flush()
+
+        sys.stdout.write(symb)
+        sys.stdout.flush()
+
+
+from math import log
+def hoeffding_rule(n, false_alarm_rate, ccoef=0):
+    """ hoeffding rule with linear correction term
+
+    Parameters:
+    --------------
+    n : int
+        Number of flows in the window
+    false_alarm_rate : float
+        false alarm rate
+    ccoef : float
+        correction coefficients
+
+    Returns
+    --------------
+    ht : float
+        hoeffding threshold
+
+
+    """
+    # return -1.0 / n * log(false_alarm_rate) + self.desc['ccoef'] * log(n) / n
+    return -1.0 / n * log(false_alarm_rate) + ccoef / n
+
