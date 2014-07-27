@@ -1,0 +1,3 @@
+[submodule "gad-ui"]
+	path = gad-ui
+	url = https://github.com/hbhzwj/gad-ui.git
