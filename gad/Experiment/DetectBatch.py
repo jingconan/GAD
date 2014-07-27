@@ -4,9 +4,9 @@ method [model free and model based] methdod.
 """
 import linecache
 import os
-from Detect import Detect
-from Batch import Batch
-from Detector import detect
+from .Detect import Detect
+from .Batch import Batch
+from ..Detector import detect
 
 
 def copy_lines(from_file, to_file, line_indices):
