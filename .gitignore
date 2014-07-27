@@ -25,5 +25,8 @@ doc/sphinx/build/
 para_comp.sh
 test.sh
 **.swp
-build/**
-d3-plot-engine/node_modules/**
+build/*
+d3-plot-engine/node_modules/*
+data/*
+
+Benchmarks/benDet.py
