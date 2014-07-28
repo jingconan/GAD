@@ -199,6 +199,8 @@ class MEM_IPFile(MEM_DiskFile):
     def _init(self):
         super(MEM_IPFile, self)._init()
         fea_option = self.desc['fea_option']
+        if not fea_option.get('cluster'):
+            return
         self.ip = self.get_IP(None, None);
         self.unique_ip = list(set(self.ip))
         self.cluster_map, self.dist_to_center_map = \
