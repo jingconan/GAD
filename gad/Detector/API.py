@@ -90,7 +90,7 @@ def detect(f_name, desc, res_args=[], real_time_logger=None):
 
     rdn = desc.get('ref_data') # reference data name
     if rdn:
-        ref_data_file = data_map[ desc['data_type'] ](rdn)
+        ref_data_file = data_map[ desc['data_type'] ](rdn, desc)
         rdh = data_handler_handle_map[desc['method']](ref_data_file, desc) #reference data handler
         detector.detect(data_handler, rdh)
     else:
