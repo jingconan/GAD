@@ -78,7 +78,7 @@ def detect(f_name, desc, res_args=[], real_time_logger=None):
     """
     # win_size = desc['win_size']
     # fea_option = desc['fea_option']
-    data_file = data_map[ desc['data_type'] ](f_name)
+    data_file = data_map[ desc['data_type'] ](f_name, desc)
     data_handler = data_handler_handle_map[desc['method']](data_file, desc)
     # data_handler = data_handler_handle_map[desc['detector_type']](data_file, fea_option)
 
