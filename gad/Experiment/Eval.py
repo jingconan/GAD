@@ -237,8 +237,8 @@ sensitivity: %f\tspecificity: %f
         """get the sequence of all abnormal flows, get the reference ground truth"""
         normal_flow_file_name = self.desc['data']
         # self.normal_flow, self.fea_name = RawParseData(normal_flow_file_name)
-        self.normal_flow = MEM_FS(normal_flow_file_name)
-        self.normal_ab_flows = MEM_FS(self.desc['ab_flows_data'])
+        self.normal_flow = MEM_FS(normal_flow_file_name, self.desc)
+        self.normal_ab_flows = MEM_FS(self.desc['ab_flows_data'], self.desc)
         return self.normal_flow.get_index(self.normal_ab_flows.t)
 
         # ab_flow_file_name = self.desc['ab_flows_data']

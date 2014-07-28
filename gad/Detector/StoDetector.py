@@ -230,33 +230,33 @@ class StoDetector (WindowDetector):
     #         self.record_data['threshold'] = None
 
 
-    # def get_hoeffding_threshold(self, false_alarm_rate):
-    #     """calculate the threshold of hoeffiding rule,
+    def get_hoeffding_threshold(self, false_alarm_rate):
+        """calculate the threshold of hoeffiding rule,
 
-    #     Parameters:
-    #     ---------------
-    #     false_alarm_rate : float
-    #         false alarm rate
+        Parameters:
+        ---------------
+        false_alarm_rate : float
+            false alarm rate
 
-    #     Returns
-    #     ---------------
-    #     res : list
-    #         list of thresholds for each window.
+        Returns
+        ---------------
+        res : list
+            list of thresholds for each window.
 
-    #     Notes:
-    #     ----------------
-    #     :math: `threshold = -1 / |G| log(epsilon)` where |G| is the number of flows in
-    #     the window and `epsilon` is the false alarm_rate
+        Notes:
+        ----------------
+        :math: `threshold = -1 / |G| log(epsilon)` where |G| is the number of flows in
+        the window and `epsilon` is the false alarm_rate
 
-    #     """
-    #     res = []
-    #     for i in xrange(self.detect_num):
-    #         flow_seq = self._get_flow_seq(i)
-    #         flow_num_in_win = flow_seq[1] - flow_seq[0] + 1
-    #         threshold = hoeffding_rule(flow_num_in_win, false_alarm_rate)
-    #         res.append(threshold)
+        """
+        res = []
+        for i in xrange(self.detect_num):
+            flow_seq = self._get_flow_seq(i)
+            flow_num_in_win = flow_seq[1] - flow_seq[0] + 1
+            threshold = hoeffding_rule(flow_num_in_win, false_alarm_rate)
+            res.append(threshold)
 
-    #     return res
+        return res
 
     def get_flow_num_between(self, rg, rg_type):
         st, ed = self.data_file.data.get_where(rg, rg_type)
