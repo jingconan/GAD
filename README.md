@@ -1,270 +1,99 @@
 Introduction
 ============
+**GAD** is the acronym of **G**eneral **A**nomaly **D**etector. It was
+once part of **SADIT**. They are splitted into two packages to solve
+different issues:
 
-**SADIT** is the acronym of **S**ystematic **A**nomaly **D**etection of
-**I**nternet **T**raffic. The motivation of SADIT is to make the
-comparison and the validation of internet anomaly deteciton algorithmes
-super easy. It addresses this problem from the following two
-perspectives:
+1. **SADIT** focuses on providing  an integrated interface for generating
+test data and evaluating algorithms.
 
- 1.  Faciliate the data generation
- 2.  Provide a standard library of anomaly detection algorithms.
-
-If you are a researcher interested in Internet Anomaly Detection, we
-strongly encourage you to implement your algorithms following the APIs
-and data format of SADIT so that you can easily compare your methods
-with exisiting algorithms in SADIT. Your help will be highly appreciated
-if you can contribute your own algorithm to the algorithm libray of
-SADIT. Feel free to contact me if you have any question.
-
-What's New in 1.1
------------------
-
- -   **More Flexible Configuration Script**: You can write the
-     parameters in a seperate config script and specify it with -c
-     option.
- -   **Generation of Traffic For Dynamic Network**: The distribution of
-     flow traffic and the arrival rate can change with time.
- -   **Robust Anomaly Detection Method**: A new anomaly detection that
-     can work robustly in dynamic network environment has been added.
- -   **Faster Data Access Speed**. Use numpy.array to store data
-     instead of list of list, which accelerate the problem by a large
-     extend.
- -   **Check Data and Reference data can be different files**.
- -   **Better structure of classes**
-
-What's New in 1.0
------------------
-
-the version 1.0 is a result of big refactor of version 0.0. The refactor
-makes the code more scalable and less buggy. 
-
-- **Paradigm of Object-oriented programming**: The **Configure** module and **Detector**
-module have been rewritten under object-oriented paradigm. In version
-0.0, all modules depends on the global settings file setting.py, which
-make the code more vulunerable to bugs. In this verison only few scripts
-depend on settings.py. Classes are widely used to reduce the need to
-pass parameters around. In case that parameters passing is required,
-well-defined structures are used. 
-
-- **Experiment**: A new folder ROOT/Experiment appears to contain different experiments. You can write
-your own scripts of Experiment and put them in this folder. 
-
-- **Better Sensitivity Anaysis**: In the version 0.0, sensitivity anaysis is done
-by change the global settings.py file and rerun the simulation. Since
-settings.py is a typical python module,changing it during the run is
-really not a good idea. In this version, special Experiment is designed
-to support sensitivity analysis.
-
-Structure
----------
-
-**SADIT** consists of two parts. The first part is a collection of
-anomalies detection algorithms. The second part is labeled flow record
-generator. The follow sections will describe the two parts accordingly.
-
-### Collection of Anomaly Detection Algorithm
-
-All the detection algorithms locates
-in the *ROOT/Detector* folder:
-
- -   **SVMDetector.py** contains two SVM based anomaly detection
-     algorithmes: 1. SVM Temporal Detector and 2. SVM Flow by Flow Detector.
- -   **StoDetector.py** contains two anomaly detection algorithms based
-     on Large Deviation Theory.
- -   **RobustDetect.py** contains a algorithm that works robustly under
-     dynamic network environment.
-
-### Labeled Flow Records Generator
-
-Labeled Flow Records Generator consists of a *Configurer* and a
-*Simulator*. The *Simulator* part is essentially a revised [fs
-simulator](http://cs-people.bu.edu/eriksson/papers/erikssonInfocom11Flow.pdf),
-developed by researchers at UW Madison. *Configurer* first generate a
-flow specification (DOT format) file with certain types of anomalies,
-then the *Simulator* will generate flow records and corresponding
-labels.
-
-#### Configurer
-
-*Configurer* generate the corresponding DOT file according to
-description of user behaviour. The important concepts in *Configurer*
-are as follows:
-
- -   **Generator**: description of a certain type of flow traffic. For
-     examples, *Harpoon* generator represents [harpoon
-     flows](http://cs.colgate.edu/~jsommers/harpoon/).
- -   **Behaviour**: description of temporal pattern. There are three
-     types behaviour: 
-     + **Normal** behaviour is described by start time and duration. 
-     + **I.I.D** behaviour has a list of possible states, but one state will be
-       selected as current state every *t* seconds according to certain
-       probability distribution. 
-     + **Markov** the state in different time is not independtly and
-       identically distributed, but is a Markov process
-
- -   **Modulator**: combine *Behaviour* and *Generator*, basicially
-     description of generator behaviour. There are three types of
-     modulators, corresponding to three behaviours described above.
-
- -   **Node**: host in the network, has *modulator\_list* attributes
- -   **Edge**: connecting two network nodes, has *delay*, *capacity*
-     attributes
- -   **Network**: a collection of network nodes and edges
- -   **Anomaly**: description of the anomaly. When an anomaly is
-     injected into the network, some attributes in the network (*Node*,
-     *Edge*) will be changed.
-
-#### Simulator
-
-Simulator is basically a revised version of fs simulator. We have added
-support to export anoumalous flows(add label information).
+2. **GAD** focuses on providing an collection of anomaly
+detection algorithms.
 
 Usage
 =====
-please type the ./cmdsadit and help documents will appear
+Please type 
+    $./cmdgad -h
 
-You need to specify the environment variable SADIT_ROOT before running it. 
+    usage: cmdgad [--profile PROFILE] [-h] [experiment]
 
-    export SADIT_ROOT=<path_of_your_sadit_installation>
+    gad
 
-Then type 
-    $./cmdsadit -h
+    positional arguments:
+      experiment         print ./gad <exper> -h for help of a experiment Avaliable
+                         experiments are [detect | detectbatch | detectcompare |
+                         detectrealtime | eval | multisrvexperiment]
 
-usage: sadit [--profile PROFILE] [-h] [experiment]
+    optional arguments:
+      --profile PROFILE  profile the program
+      -h, --help         print help message and exit
 
-positional arguments:
+Each **experiment** provides a subcommand that has certain functionality.
+Avaliable subcommnd (experiments) are as follows:
 
-    experiment print ./sadit <exper> -h for help of a experiment Avaliable
-    experiments are [MultiSrvExperiment | Detect | DetectBatch | Eval | Sim |
-    BaseExper | DetectCompare | SimDetect | Batch | GUITopoSim]
+detect
+------
+detect the data directly and plot the result as figure.
 
-optional arguments:
+Examples:
 
-    --profile PROFILE profile the program -h, --help print help message and
-    exit
+    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show
+    $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='dump test-data/sc.pk' --lamb=0.2
+    $./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='load test-data/sc.pk' --lamb=0.2 --pic_show
 
-*experiment* specify the experiment you want to execute. An
-**experiment** is actually a subcommand that has certain functionality.
+detectrealtime
+--------------
+detect the data and send data to web interface to visualize in
+real-time. It requires support of nodejs. You need to install
+[npm](https://www.npmjs.org/) before using it.
 
-Avaliable experiments are as follows:
-    - **Detect**: detect the flow record data specified by *-d* option
-    - **Sim**: simulate and generate flow records.
-    - **GUITopoSim** : simulate using network topogogy created by GUI
-      topology editor
-    - **SimDetect**: simulate and detect.
-    - **Eval**: Evaluation of the detection algorithmm (calculate fpr,
-      fnr and plot the ROC curve)
-    - **DetectBatch**: runs detection algortihms with all combinations
-      of parameters and outputs the results to a folder, helps to
-      select the optimal parameters.
-    - **DetectCompare**: run several detection algorithms and save the
-      intermediate results. Can also load results load computed before
-      and show comparison figure.
+Examples:
 
-To see the help message of an experiment, just type :
-    $ ./sadit -e <exper> -h
+First you need to start the gad-ui back-end interface
 
-Whenever you are not sure about the options you can set, just add *-h*
-to the end of command and execute it and help message will be printed
-correspondingly.
+    $ cd gad-ui
+    $ git pull
+    $ npm install
+    $ node server.js
 
-Sample Configuration for Labeled Flow Generator
-------------------------------------- 
+Start a webserver
 
-> - SimExample.py 
-> - TimeVaringSimExample.py 
-> - DTMarkovConfig.py 
-> - CTMarkovConfig.py 
-> - imalse/
+    $ python -m SimpleHTTPServer
 
-Example Commands :
+In any browse, typle the following url
+    http://localhost:8000/dashboard.html
 
-    $ ./sadit Sim -c <ConfigFilePath>
+Then start gad in realtime mode:
 
-### Sample Configuration for Detectors
+    $ ./cmdgad detectrealtime -c ./example-configs/detect-config.py -d
+    ./test-data/n0_flow.txt -m mfmb --srv=127.0.0.1:3000
 
-> -   DetectConfig.py
-> -   DetectSQLConfig.py
-> -   RobustDetect.py
-> -   EvalConfig.py
-> -   DetectBatchConfig.py
+The result will be visualized in the browser in realtime
 
-Examples commands :
 
-    $ ./cmdsadit Detect -c Example/DetectConfig.py -d <data_file> -m <method_name>
-    $ ./cmdsadit Detect -c ./Example/RobustDetect.py -d ./Simulator/n0_flow.txt -m robust --lamb=1 --pic_show
-    $ ./cmdsadit DetectBatch -c DetectBatchConfig.py -h
-    $ ./sadit Eval -c EvalConfig.py -h
-    $ cd tools/; ./convert-to-hdf.py ../Simulator/n0_flow.txt fs ./n0_flow.h5; cd ..;
-    $ ./cmdsadit Detect -d ./tools/n0_flow.h5 -c ./Example/DetectConfig.py --data_type='pt' -m mfmb --pic_show
+detectcompare
+-------------
+run several methods on a dataset and save the results for furture
+comparison.
 
-Note: You may need to change the ROOT variable in the configuration
-files before run these commands.
+Examples:
 
-Want to implement your algorithm?
----------------------------------
+    $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='dump test-data/sc.pk' --lamb=0.2
+    $ ./cmdgad detectcompare -c ./example-configs/compare-detect.py -d ./test-data/n0_flow.txt -p mfmb,robust 
+    $ ./cmdgad detectcompare -c ./example-configs/compare-detect.py -d ./test-data/n0_flow.txt -p mfmb,robust --plot_dump --pic_show
 
-### Use the labeled flow records generator in fs simulator
-The generated flows will be the *ROOT/Simulator* folder. The flows end with *\_flow.txt*, for example,
-n0\_flow.txt is the network flows trough node 0. File start with
-*abnormal\_* is the exported abnormal flows correspondingly.
 
-**A typical line is**
-:   textexport n0 1348412129.925416 1348412129.925416 1348412130.070733
-    10.0.7.4:80-\>10.0.8.5:53701 tcp 0x0 n1 5 4215 FSA
+eval
+----
+calculate the ROC curve of a method.
 
-**line format**
-:   prefix nodename time flow\_start\_time flow\_end\_time
-    src\_ip:src\_port-\>dst\_ip:dst\_port protocol payload destname
-    unknown flowsize unknown
+    $ ./cmdgad eval -c example-configs/eval-config.py --res_folder=res/ --ab_flows_data test-data/test_ab_flow.txt --plot
 
-After finishing your detection algorihms, the last thing you need to do
-is to add the corresponding class name to **detector\_map** in
-*ROOT/Detector/API.py*. After that you will be able to use your
-detection algorithm. You can use **Compare** experiment to compare with
-other algorithm or **Eval** algorithm to Evaluate your algorithm. You
-can also implement new experiment to play with your new algorithm.
-
-### Use Other flow records
-
-SADIT does not only support the text output format of fs simulator, but
-also several other types of flow data. The data wrapper classes are
-defined in sadit.Detector.Data module and the handler classes locate in
-the sadit.Detector.DataHandler module.
-
-If you want use a new type of data, you need to implement a data wrapper
-class first. sadit.Detector.Data.Data is the base class for all data
-wrapper class. sadit.Detector.Data.MEM\_DiskFile is the base class for
-all file-type data wrapper data. sadit.Detector.Data.MySQLDatabase is
-the base class for all mysql database wrapper class.
-
-Optionally, you can implement a handler class that will manipulate the
-DataFile and and some useful quantities that may be useful to you
-algorithms. The data handler classes are defined in
-sadit.Detector.DataHandler module.
-sadit.Detector.DataHandler.QuantizeDataHandler and its subclasses define
-get\_em() function to get probability distribution of the flows, which
-is useful for the stochastic approaches. If you just need the raw data,
-you can simple use sadit.Detector.DataHandler.FakeDataHandler
-
-Then you just need to add your data\_handler to
-**data\_handler\_handle\_map** defined in *ROOT/Detector/API.py*
-
-Download
---------
-
-You can download sadit from
-[here](https://bitbucket.org/hbhzwj/sadit/get/2182e36f40d5.zip).
-
-or you can user mercurial to get a complete copy with revision history :
-
-    git clone git@github.com:hbhzwj/SADIT.git
 
 Installation
-------------
+============
 
-SADIT can be installed in Linux, Mac OS X and Windows(through cygwin)
+GAD can be installed in Linux, Mac OS X and Windows(through cygwin)
 with python 2.7
 
 ### Debain (Ubuntu, Mint, etc)
@@ -290,10 +119,8 @@ numpy and matplotlib. Please go to <http://www.scipy.org/NumPy> and
 installation instruction.
 
 ### Windows
+GAD should be able to be installed on windows machine with the help of cgywin. 
 
-SADIT can be installed on windows machine with the help of cgywin. There
-is a detailed step by step installation tutorial, click
-<https://docs.google.com/open?id=0B0EiFkYoJWwbaloybWV5V1BuQVk>
 
 ### Manually
 
@@ -328,42 +155,19 @@ if you are in debain based system. you can simple use :
 in other system, refer to corresponding website for installation of
 **numpy** and **matplotlib**
 
-Videos
-------
 
-I have recorded several hand by hand video tutorials for SADIT 1.0. The
-usage of SADIT 1.1 is **a little bit different**, but I think these
-videos will still be useful. I will record new videos for latest version
-of SADIT when I have time.
+Code Structure
+============
 
-### Installation
+All the detection algorithms locates
+in the *ROOT/Detector* folder:
 
-http://www.youtube.com/embed/MS8jfJSPBn4
-
-### Configuration After Installation
-
-http://www.youtube.com/embed/i87sXncx5KA
-
-### Get Help Message
-
-http://www.youtube.com/embed/w-9kHeMcIZw
-
-### Basic run and tune of parameters
-
-http://www.youtube.com/embed/rAIJwZpIOjY
-
-### Search for Good Parameters
-
-http://www.youtube.com/embed/0_9nAfdWt50
-
-### Generate Comparison Plot
-
-http://www.youtube.com/embed/zaQB0M5VpnM
-
-If you have no access to youtube, you can download the videos(all AVI
-format) in the following link(*it is hosted in Google Drive Server*).
-<https://docs.google.com/open?id=0B9xGMLqrhlbdNE9UTFhSX2hUa2s>
-
+ -   **SVMDetector.py** contains two SVM based anomaly detection
+     algorithmes: 1. SVM Temporal Detector and 2. SVM Flow by Flow Detector.
+ -   **StoDetector.py** contains two anomaly detection algorithms based
+     on Large Deviation Theory.
+ -   **RobustDetect.py** contains a algorithm that works robustly under
+     dynamic network environment.
 
 
 Licensing
