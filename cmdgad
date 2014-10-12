@@ -12,7 +12,7 @@ exper_ops = [d for d in dir(Experiment) if not d.startswith('__')
 parser = argparse.ArgumentParser(description='gad', add_help=False)
 
 parser.add_argument('experiment', default=None, nargs='?',
-        help="""type ./cmdgad <exper> -h for help of an experiment
+        help="""type ./cmdgad <exper> -h for help of an experiment;
         available experiments are [%s]"""
         %(' | '.join(exper_ops)))
 
