@@ -33,7 +33,7 @@ DETECTOR_DESC = dict(
         # discrete_level = DISCRETE_LEVEL,
         # cluster_number = CLUSTER_NUMBER,
         fea_option = {'flow_size': (2, [0, 10000]),
-                      'duration':(3, [0, 10]),
+                      'flow_size_pkts':(3, [0, 10]),
                       'cluster': (3, [0, 2]),
                       'dist_to_center': (3, [0, 100000])},
         ano_ana_data_file = ANO_ANA_DATA_FILE,
