@@ -242,7 +242,7 @@ class MEM_FS(MEM_IPFile):
             ('prot', 10, np.str_),
             ('node', 12, np.str_),
             ('flow_size', 14, np.float64),
-            #('flow_size_pkts', 13, np.float64),
+            ('flow_size_pkts', 13, np.float64),
             ]
 
     DT = np.dtype([
@@ -255,7 +255,7 @@ class MEM_FS(MEM_IPFile):
         ('prot', np.str_, 5),
         ('node', np.str_ , 5),
         ('flow_size', np.float64, 1),
-        #('flow_size_pkts', np.float64, 1),
+        ('flow_size_pkts', np.float64, 1),
         ])
 
     #FIXME the c_parse_records_fs will fail if the timestamp is very huge
