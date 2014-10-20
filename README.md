@@ -1,8 +1,7 @@
 Introduction
 ============
 **GAD** is the acronym of General Anomaly Detector. It was
-once part of **SADIT**. They are splitted into two packages to solve
-different issues:
+once part of **[SADIT](https://github.com/hbhzwj/SADIT)**. We can now use the two packages either jointly or separately. Here are their main differences:
 
 1. **SADIT** focuses on providing  an integrated interface for generating
 test data and evaluating algorithms.
