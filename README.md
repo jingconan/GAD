@@ -14,19 +14,21 @@ Usage
 =====
 Please type 
     $./cmdgad -h
+```
+usage: cmdgad [--profile PROFILE] [-h] [experiment]
 
-    usage: cmdgad [--profile PROFILE] [-h] [experiment]
+gad
 
-    gad
+positional arguments:
+  experiment         type ./cmdgad <exper> -h for help of an experiment;
+                     available experiments are [detect | detectbatch |
+                     detectcompare | detectrealtime | eval |
+                     multisrvexperiment]
 
-    positional arguments:
-      experiment         print ./gad <exper> -h for help of a experiment Avaliable
-                         experiments are [detect | detectbatch | detectcompare |
-                         detectrealtime | eval | multisrvexperiment]
-
-    optional arguments:
-      --profile PROFILE  profile the program
-      -h, --help         print help message and exit
+optional arguments:
+  --profile PROFILE  profile the program
+  -h, --help         print help message and exit
+```
 
 Each **experiment** provides a subcommand that has certain functionality.
 Avaliable subcommnd (experiments) are as follows:
@@ -39,36 +41,7 @@ Examples:
 
     $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show
     $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='dump test-data/sc.pk' --lamb=0.2
-    $./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='load test-data/sc.pk' --lamb=0.2 --pic_show
-
-detectrealtime
---------------
-detect the data and send data to web interface to visualize in
-real-time. It requires support of nodejs. You need to install
-[npm](https://www.npmjs.org/) before using it.
-
-Examples:
-
-First you need to start the gad-ui back-end interface
-
-    $ cd gad-ui
-    $ git pull
-    $ npm install
-    $ node server.js
-
-Start a webserver
-
-    $ python -m SimpleHTTPServer
-
-In any browse, typle the following url
-    http://localhost:8000/dashboard.html
-
-Then start gad in realtime mode:
-
-    $ ./cmdgad detectrealtime -c ./example-configs/detect-config.py -d
-    ./test-data/n0_flow.txt -m mfmb --srv=127.0.0.1:3000
-
-The result will be visualized in the browser in realtime
+    $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='load test-data/sc.pk' --lamb=0.2 --pic_show
 
 
 detectcompare
@@ -81,13 +54,6 @@ Examples:
     $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='dump test-data/sc.pk' --lamb=0.2
     $ ./cmdgad detectcompare -c ./example-configs/compare-detect.py -d ./test-data/n0_flow.txt -p mfmb,robust 
     $ ./cmdgad detectcompare -c ./example-configs/compare-detect.py -d ./test-data/n0_flow.txt -p mfmb,robust --plot_dump --pic_show
-
-
-eval
-----
-calculate the ROC curve of a method.
-
-    $ ./cmdgad eval -c example-configs/eval-config.py --res_folder=res/ --ab_flows_data test-data/test_ab_flow.txt --plot
 
 
 Installation
