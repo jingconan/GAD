@@ -1,122 +1,49 @@
 Introduction
 ============
-**GAD** is the acronym of **G**eneral **A**nomaly **D**etector. It was
+**GAD** is the acronym of General Anomaly Detector. It was
 once part of **SADIT**. They are splitted into two packages to solve
 different issues:
 
 1. **SADIT** focuses on providing  an integrated interface for generating
 test data and evaluating algorithms.
 
-2. **GAD** focuses on providing an collection of anomaly
+2. **GAD** focuses on providing a collection of anomaly
 detection algorithms.
-
-Usage
-=====
-Please type 
-    $./cmdgad -h
-
-    usage: cmdgad [--profile PROFILE] [-h] [experiment]
-
-    gad
-
-    positional arguments:
-      experiment         print ./gad <exper> -h for help of a experiment Avaliable
-                         experiments are [detect | detectbatch | detectcompare |
-                         detectrealtime | eval | multisrvexperiment]
-
-    optional arguments:
-      --profile PROFILE  profile the program
-      -h, --help         print help message and exit
-
-Each **experiment** provides a subcommand that has certain functionality.
-Avaliable subcommnd (experiments) are as follows:
-
-detect
-------
-detect the data directly and plot the result as figure.
-
-Examples:
-
-    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show
-    $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='dump test-data/sc.pk' --lamb=0.2
-    $./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='load test-data/sc.pk' --lamb=0.2 --pic_show
-
-detectrealtime
---------------
-detect the data and send data to web interface to visualize in
-real-time. It requires support of nodejs. You need to install
-[npm](https://www.npmjs.org/) before using it.
-
-Examples:
-
-First you need to start the gad-ui back-end interface
-
-    $ cd gad-ui
-    $ git pull
-    $ npm install
-    $ node server.js
-
-Start a webserver
-
-    $ python -m SimpleHTTPServer
-
-In any browse, typle the following url
-    http://localhost:8000/dashboard.html
-
-Then start gad in realtime mode:
-
-    $ ./cmdgad detectrealtime -c ./example-configs/detect-config.py -d
-    ./test-data/n0_flow.txt -m mfmb --srv=127.0.0.1:3000
-
-The result will be visualized in the browser in realtime
-
-
-detectcompare
--------------
-run several methods on a dataset and save the results for furture
-comparison.
-
-Examples:
-
-    $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='dump test-data/sc.pk' --lamb=0.2
-    $ ./cmdgad detectcompare -c ./example-configs/compare-detect.py -d ./test-data/n0_flow.txt -p mfmb,robust 
-    $ ./cmdgad detectcompare -c ./example-configs/compare-detect.py -d ./test-data/n0_flow.txt -p mfmb,robust --plot_dump --pic_show
-
-
-eval
-----
-calculate the ROC curve of a method.
-
-    $ ./cmdgad eval -c example-configs/eval-config.py --res_folder=res/ --ab_flows_data test-data/test_ab_flow.txt --plot
 
 
 Installation
 ============
 
-GAD can be installed in Linux, Mac OS X and Windows(through cygwin)
-with python 2.7
+GAD can be installed on Linux, Mac OS X and Windows (through cygwin) with python 2.7. However, we strongly recommend the debian-based OS, e.g., Ubuntu 12.04 or 14.04, for which we have prepared a one-command installation script. 
 
-### Debain (Ubuntu, Mint, etc)
+To be specific, if you are working on Ubuntu 12.04 or 14.04, do the following sequentially:
 
-If you are using debain based system like Ubuntu, Mint, you are lucky.
-There is an installation script prepared for debain based system, just
-type :
+1. Change the working directory to where you want to install GAD, create a new folder `gad`, and then type:
 
-    sh debain.sh
+ `$ git clone https://github.com/hbhzwj/GAD.git gad/`
+
+2. Change the working directory to be `gad/install`, and then type:
+
+ `gad/install$ sudo sh debian.sh` 
+
+
+
+If you want to install GAD on other types of OS, you may refer to the following:
+
 
 ### Mac OS X
 
-For mac user, just type :
+For mac users, after cloning the GAD package, change the working directory to be `ROOT/install`, and then just type :
 
     sudo python setup-dep.py
 
 the **ipaddr**, **networkx**, **pydot**, **pyparsing** and **py-radix**
 will be automatically downloaded and installed. If you just want to use
-the **Detector** part, that is already enough If you want to use
+the **Detector** part (i.e., **GAD**), that is already enough. (For SADIT users) If you want to use
 **Configure** and **Simulator** part, then you also need to install
 numpy and matplotlib. Please go to <http://www.scipy.org/NumPy> and
 <http://matplotlib.sourceforge.net/faq/installing_faq.html> for
-installation instruction.
+installation instructions.
 
 ### Windows
 GAD should be able to be installed on windows machine with the help of cgywin. 
@@ -124,9 +51,10 @@ GAD should be able to be installed on windows machine with the help of cgywin.
 
 ### Manually
 
-If the automatical methods fail, you can try to install manually.
-**SADIT** has been tested on python2.7.2. SADIT depends on all softwares
-that fs-simulate depends on:
+(For SADIT users) If the automatic methods fail, you can install SADIT manually.
+
+**SADIT** has been tested on python 2.7.2. SADIT depends on all softwares
+that [fs-simulator](http://cs-people.bu.edu/eriksson/papers/erikssonInfocom11Flow.pdf) depends on:
 
 > -   ipaddr (2.1.1)
 >     [Get](http://ipaddr-py.googlecode.com/files/ipaddr-2.1.1.tar.gz)
@@ -156,11 +84,61 @@ in other system, refer to corresponding website for installation of
 **numpy** and **matplotlib**
 
 
+Usage
+=====
+Please type $ ./cmdgad -h
+ to get general help message (see the following).
+
+```
+usage: cmdgad [--profile PROFILE] [-h] [experiment]
+
+gad
+
+positional arguments:
+  experiment         type ./cmdgad <exper> -h for help of an experiment;
+                     available experiments are [detect | detectbatch |
+                     detectcompare | detectrealtime | eval |
+                     multisrvexperiment]
+
+optional arguments:
+  --profile PROFILE  profile the program
+  -h, --help         print help message and exit
+```
+
+Each **experiment** provides a subcommand that has certain functionality.
+Available subcommands (experiments) are as follows:
+
+detect
+------
+detect the data directly and plot the result.
+
+Examples:
+
+    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show
+    $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='dump test-data/sc.pk' --lamb=0.2
+    $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='load test-data/sc.pk' --lamb=0.2 --pic_show
+
+
+detectcompare
+-------------
+run several methods on a dataset and save the results for future
+ comparison.
+
+Examples:
+
+    $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='dump test-data/sc.pk' --lamb=0.2
+    $ ./cmdgad detectcompare -c ./example-configs/compare-detect.py -d ./test-data/n0_flow.txt -p mfmb,robust 
+    $ ./cmdgad detectcompare -c ./example-configs/compare-detect.py -d ./test-data/n0_flow.txt -p mfmb,robust --plot_dump --pic_show
+
+
+
+
+
 Code Structure
 ============
 
-All the detection algorithms locates
-in the *ROOT/Detector* folder:
+All the detection algorithms locate
+in the *ROOT/gad/Detector* folder:
 
  -   **SVMDetector.py** contains two SVM based anomaly detection
      algorithmes: 1. SVM Temporal Detector and 2. SVM Flow by Flow Detector.
@@ -172,16 +150,29 @@ in the *ROOT/Detector* folder:
 
 Licensing
 =============
-Please see the file called LICENSE.
+Please see the `LICENSE` file.
 
 Authors
 =============
-Jing Conan Wang
+Jing (Conan) Wang
+```
+Jing Wang obtained his Ph.D. degree in Fall 2014 from Division of Systems Engineering, 
+Boston University (advised by Professor Yannis Paschalidis).  His main interest is 
+Mathematical Modeling, i.e., constructing mathematical models for the real world and 
+trying to solve practical problems.
 
-    Jing Wang is a Ph.D. Student in Division of Systems Engineering, Boston
-    University advised by Professor Yannis Paschalidis.  His main interests is
-    Mathematica Modeling, i.e., contructing mathematical models for the real
-    word and try to solve practical problems.
+EMAIL: wangjing AT bu.edu
+Personal Webpage: http://people.bu.edu/wangjing/
+``` 
 
-    **EMAIL:** wangjing AT bu.edu
-    **Personal Webpage:** http://people.bu.edu/wangjing/
+Collaborator
+=============
+Jing (John) Zhang
+```
+Jing Zhang is now a PhD student in Division of Systems Engineering, Boston University 
+(advised by Professor Yannis Paschalidis). 
+
+EMAIL: jzh AT bu.edu
+Personal Webpage: http://people.bu.edu/jzh/
+```
+Last update: 10/20/2014 (By Jing Z.)
