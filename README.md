@@ -74,14 +74,14 @@ besides: it requires:
     -   matplotlib [Get](http://matplotlib.sourceforge.net/)
     -   profilehooks [Get](http://mg.pov.lt/profilehooks/)
 
-if you are in debain based system. you can simple use :
+If you are using debian based system, you can just type:
 
     sudo apt-get install python-dev
     sudo apt-get install python-numpy
     sudo apt-get install python-matplotlib
 
-in other system, refer to corresponding website for installation of
-**numpy** and **matplotlib**
+For other OS's, please refer to the corresponding website for installation of
+**numpy** and **matplotlib**.
 
 
 Usage
@@ -106,7 +106,8 @@ optional arguments:
 ```
 
 Each **experiment** provides a subcommand that has certain functionality.
-Available subcommands (experiments) are as follows:
+
+We give some sample subcommands (experiments) as follows:
 
 detect
 ------
@@ -175,4 +176,3 @@ Jing Zhang is now a PhD student in Division of Systems Engineering, Boston Unive
 EMAIL: jzh AT bu.edu
 Personal Webpage: http://people.bu.edu/jzh/
 ```
-Last update: 10/20/2014 (By Jing Z.)
