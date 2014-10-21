@@ -9,6 +9,14 @@ test data and evaluating algorithms.
 2. **GAD** focuses on providing a collection of anomaly
 detection algorithms.
 
+If you are interested in our recent publications (see below) on network anomaly detection and want to use them as references, please cite the repository [SADIT](https://github.com/hbhzwj/SADIT)/[GAD](https://github.com/hbhzwj/GAD) together with:
+
+
+Jing Wang and I. Ch. Paschalidis, "***Statistical Traffic Anomaly Detection in Time-Varying Communication Networks***", IEEE Transactions on Control of Network Systems, in print.
+
+Jing Wang and I. Ch. Paschalidis,  "***Robust Anomaly Detection in Dynamic Networks***", Proceedings of the 22nd Mediterranean Conference on Control and Automation
+  (MED 14), pages 428-433, June 16--19, 2014, Palermo, Italy. 
+
 
 Installation
 ============
@@ -85,7 +93,7 @@ For other OS's, please refer to the corresponding website for installation of
 
 Usage
 =====
-Please type $ ./cmdgad -h
+Please type `$ ./cmdgad -h`
  to get general help message (see the following).
 
 ```
