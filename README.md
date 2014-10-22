@@ -39,7 +39,7 @@ To be specific, if you are working on Ubuntu 12.04 or 14.04, do the following se
 
 4. Make sure `socket.io` and `socketIO-client` be installed as well.
 
-  You may use `$ npm install socket.io` and refer to https://pypi.python.org/pypi/socketIO-client to make socketIO-client work on your machine.
+  You may use `$ npm install socket.io` and refer to https://pypi.python.org/pypi/socketIO-client to make `socketIO-client` work on your machine.
 
 
 If you want to install GAD on other types of OS, you may refer to the following:
@@ -183,6 +183,7 @@ jzh@jzh:~/Research/Anomaly_Detection/gad/gad-ui$ node server.js
    debug - set heartbeat interval for client TcnFyzPltVRfrAQCVUAK
    debug - client authorized for 
    debug - websocket writing 1::
+......
 ```
 
 
@@ -275,25 +276,27 @@ Please see the `LICENSE` file.
 Authors
 =============
 Jing (Conan) Wang
-```
+
 Jing Wang obtained his Ph.D. degree in Fall 2014 from Division of Systems Engineering, 
-Boston University (advised by Professor Yannis Paschalidis).  His main interest is 
+Boston University (advised by Professor [Yannis Paschalidis](http://ionia.bu.edu/)).  His main interest is 
 Mathematical Modeling, i.e., constructing mathematical models for the real world and 
 trying to solve practical problems.
 
-EMAIL: wangjing AT bu.edu
+Email: wangjing AT bu.edu
+
 Personal Webpage: http://people.bu.edu/wangjing/
-``` 
+
 
 Collaborator
 =============
 Jing (John) Zhang
-```
+
 Jing Zhang is now a PhD student in Division of Systems Engineering, Boston University 
-(advised by Professor Yannis Paschalidis). 
+(advised by Professor [Yannis Paschalidis](http://ionia.bu.edu/)). 
 
-EMAIL: jzh AT bu.edu
+EMail: jzh AT bu.edu
+
 Personal Webpage: http://people.bu.edu/jzh/
-```
 
-Last update: 10/22/2014 (By Jing Z.)
+
+*Last update: 10/22/2014 (By Jing Z.)*
