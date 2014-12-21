@@ -29,10 +29,17 @@ To be specific, if you are working on Ubuntu 12.04 or 14.04, do the following se
 
  `$ git clone https://github.com/hbhzwj/GAD.git gad/`
 
-2. Change the working directory to be `gad/install`, and then type:
+2. Change the working directory to `gad`, and then type:
+
+ `gad$ git clone https://github.com/hbhzwj/gad-ui.git gad-ui/`
+
+3. Change the working directory to be `gad/install`, and then type:
 
  `gad/install$ sudo sh debian.sh` 
 
+4. Make sure `socket.io` and `socketIO-client` be installed as well.
+
+  You may use `$ npm install socket.io` and refer to https://pypi.python.org/pypi/socketIO-client to make `socketIO-client` work on your machine.
 
 
 If you want to install GAD on other types of OS, you may refer to the following:
@@ -114,7 +121,7 @@ optional arguments:
 
 Each **experiment** provides a subcommand that has certain functionality.
 
-We give some sample subcommands (experiments) as follows:
+We give some sample commands (experiments) as follows:
 
 detect
 ------
@@ -125,6 +132,68 @@ Examples:
     $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show
     $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='dump test-data/sc.pk' --lamb=0.2
     $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='load test-data/sc.pk' --lamb=0.2 --pic_show
+
+
+detectrealtime
+--------------
+detect the data and send data to web interface to visualize in
+real-time. It requires support of `node js`; for `node js` installation, refer to http://nodejs.org/.
+
+
+Examples:
+
+First, cd to `gad-ui/` folder, run the following command: 
+
+  `$ python -m SimpleHTTPServer` or `$ python3 -m http.server` (provided that you have installed python3)
+
+Either will start a webserver. You will get responses similar to:
+
+```
+jzh@jzh:~/Research/Anomaly_Detection/gad/gad-ui$ python -m SimpleHTTPServer
+Serving HTTP on 0.0.0.0 port 8000 ...
+127.0.0.1 - - [22/Oct/2014 10:53:36] "GET /dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [22/Oct/2014 10:53:36] "GET /node_modules/socket.io/node_modules/socket.io-client/dist/socket.io.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [22/Oct/2014 10:53:36] "GET /frameworks/jquery-1.10.2.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [22/Oct/2014 10:53:36] "GET /frameworks/d3.v3.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [22/Oct/2014 10:53:36] "GET /js/dash.js HTTP/1.1" 200 -
+127.0.0.1 - - [22/Oct/2014 10:53:39] "GET /dashboard.html HTTP/1.1" 200 -
+......
+```
+
+
+Then, open a web browser, go to the following website:
+
+         http://localhost:8000/dashboard.html
+
+
+You will see a chart. 
+
+Next, open another command window, cd to the `gad-ui/` folder, and run the following command: 
+
+         node server.js 
+
+
+You will get responses similar to:
+```
+jzh@jzh:~/Research/Anomaly_Detection/gad/gad-ui$ node server.js 
+   info  - socket.io started
+   debug - client authorized
+   info  - handshake authorized TcnFyzPltVRfrAQCVUAK
+   debug - setting request GET /socket.io/1/websocket/TcnFyzPltVRfrAQCVUAK
+   debug - set heartbeat interval for client TcnFyzPltVRfrAQCVUAK
+   debug - client authorized for 
+   debug - websocket writing 1::
+......
+```
+
+
+After finishing all these prerequisites, run the following command in `gad/` folder
+
+
+         ./cmdgad detectrealtime -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --srv=127.0.0.1:3000
+
+
+The realtime detection results will show up in the webpage above. 
 
 
 detectcompare
@@ -139,7 +208,16 @@ Examples:
     $ ./cmdgad detectcompare -c ./example-configs/compare-detect.py -d ./test-data/n0_flow.txt -p mfmb,robust --plot_dump --pic_show
 
 
+eval
+----
+calculate the ROC curve of a method.
 
+Examples:
+
+CD to `gad`, run the following two commands sequentially:
+
+    $ ./cmdgad eval -c example-configs/eval-config.py --res_folder=res/ --ab_flows_data test-data/test_ab_flow.txt
+    $ ./cmdgad eval -c example-configs/eval-config.py --res_folder=res/ --ab_flows_data test-data/test_ab_flow.txt --plot
 
 
 Code Structure
@@ -198,25 +276,27 @@ Please see the `LICENSE` file.
 Authors
 =============
 Jing (Conan) Wang
-```
+
 Jing Wang obtained his Ph.D. degree in Fall 2014 from Division of Systems Engineering, 
-Boston University (advised by Professor Yannis Paschalidis).  His main interest is 
+Boston University (advised by Professor [Yannis Paschalidis](http://ionia.bu.edu/)).  His main interest is 
 Mathematical Modeling, i.e., constructing mathematical models for the real world and 
 trying to solve practical problems.
 
-EMAIL: wangjing AT bu.edu
+Email: wangjing AT bu.edu
+
 Personal Webpage: http://people.bu.edu/wangjing/
-``` 
+
 
 Collaborator
 =============
 Jing (John) Zhang
-```
+
 Jing Zhang is now a PhD student in Division of Systems Engineering, Boston University 
-(advised by Professor Yannis Paschalidis). 
+(advised by Professor [Yannis Paschalidis](http://ionia.bu.edu/)). 
 
-EMAIL: jzh AT bu.edu
+EMail: jzh AT bu.edu
+
 Personal Webpage: http://people.bu.edu/jzh/
-```
 
-Last update: 10/20/2014 (By Jing Z.)
+
+*Last update: 10/22/2014 (By Jing Z.)*
