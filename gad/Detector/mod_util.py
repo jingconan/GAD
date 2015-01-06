@@ -144,8 +144,8 @@ def hoeffding_rule(n, false_alarm_rate, ccoef=0):
     # return -1.0 / n * log(false_alarm_rate) + ccoef / n
 
     # modified by Jing Zhang (jingzbu@gmail.com)
-    # return -1.0 / n * log(false_alarm_rate)    
+    return -1.0 / n * log(false_alarm_rate)    
 
     # added by Jing Zhang (jingzbu@gmail.com)
     # the following threshold is suggested in http://arxiv.org/abs/0909.2234 
-    return 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, 5 * 3 * 1 - 1)
+    # return 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, 5 - 1)
