@@ -4,17 +4,18 @@ ROOT = ''
 ##   Parameters For Detector  ###
 #################################
 
-ANO_ANA_DATA_FILE = './Share/AnoAna.txt'
+#ANO_ANA_DATA_FILE = './Share/AnoAna.txt'
 DETECTOR_DESC = dict(
-        interval=30,
+        interval=100,
         win_size=100,
         win_type='time', # 'time'|'flow'
         fr_win_size=100, # window size for estimation of flow rate
-        false_alarm_rate = 0.001,
+        hoeff_far = 0.001,
         fea_option = {'flow_size':(8, [0, 10000])},
-        ano_ana_data_file = ANO_ANA_DATA_FILE,
+        #ano_ana_data_file = ANO_ANA_DATA_FILE,
         normal_rg = None,
-        detector_type = 'mfmb',
+	norm_win_ratio = 10,
+	#period = 24 * 3600,
         max_detect_num = None,
         data_type = 'fs',
         pic_show = True,
@@ -22,4 +23,5 @@ DETECTOR_DESC = dict(
         export_flows = None,
         csv = None,
         )
+
 

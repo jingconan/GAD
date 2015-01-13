@@ -15,7 +15,7 @@ from .RobustDetector import *
 # options with detector name
 detector_map = {
         # 'auto': AutoSelectStoDetector,
-        # '2w': TwoWindowAnoDetector,
+        '2w': TwoWindowAnoDetector,
         'two_win': TwoWindowAnoDetector,
         # 'ada':AdaStoDetector,
         'period': PeriodStoDetector,
@@ -40,7 +40,7 @@ data_handler_handle_map = {
         # 'mf': ModelFreeQuantizeDataHandler,
         # 'mb': ModelBasedQuantizeDataHandler,
         'mfmb': FBQuantizeDataHandler,
-        # '2w': QuantizeDataHandler,
+        '2w': QuantizeDataHandler,
         'two_win': FBQuantizeDataHandler,
         # 'ada': QuantizeDataHandler,
         'period': FBQuantizeDataHandler,

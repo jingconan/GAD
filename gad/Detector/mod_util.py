@@ -117,35 +117,3 @@ class ProgressBar(object):
 
         sys.stdout.write(symb)
         sys.stdout.flush()
-
-
-from math import log
-from scipy.stats import chi2 # added by Jing Zhang (jingzbu@gmail.com)
-def hoeffding_rule(n, false_alarm_rate, ccoef=0):
-    """ hoeffding rule with linear correction term
-
-    Parameters:
-    --------------
-    n : int
-        Number of flows in the window
-    false_alarm_rate : float
-        false alarm rate
-    ccoef : float
-        correction coefficients
-
-    Returns
-    --------------
-    ht : float
-        hoeffding threshold
-
-
-    """
-    # return -1.0 / n * log(false_alarm_rate) + self.desc['ccoef'] * log(n) / n
-    # return -1.0 / n * log(false_alarm_rate) + ccoef / n
-
-    # modified by Jing Zhang (jingzbu@gmail.com)
-    return -1.0 / n * log(false_alarm_rate)    
-
-    # added by Jing Zhang (jingzbu@gmail.com)
-    # the following threshold is suggested in http://arxiv.org/abs/0909.2234 
-    # return 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, 5 - 1)

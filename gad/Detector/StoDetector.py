@@ -14,9 +14,17 @@ from ..util import DataEndException, FetchNoDataException, abstract_method
 from ..util import save_csv, plt
 from ..util import zdump, zload
 
-from .DetectorLib import I1, I2
-from .mod_util import plot_points, ProgressBar, hoeffding_rule
+from .DetectorLib import I1, I2, adjust_mat
+from .mod_util import plot_points, ProgressBar
 from .Base import WindowDetector
+
+###### added by Jing Zhang (jingzbu@gmail.com)
+import numpy as np
+from numpy import linalg as LA
+from math import sqrt
+from scipy.stats import chi2
+from matplotlib.mlab import prctile
+##############################################
 
 
 def is_basic_type(a):
@@ -143,6 +151,159 @@ class StoDetector (WindowDetector):
         rg_type = self.desc['win_type']
         return self.ref_file.get_em(rg=nominal_rg, rg_type=rg_type)
 
+        ###### added by Jing Zhang (jingzbu@gmail.com)
+    def Q_est(self, mu):
+        """
+        Estimate the original transition matrix Q
+        Example
+        ----------------
+        >>> mu = [[0.625,  0.125],  [0.125,  0.125]]
+        >>> print Q_est(mu)
+        [[ 0.83333333  0.16666667]
+        [ 0.5         0.5       ]]
+        """
+        mu = np.array(mu)
+        N, _ = mu.shape
+        assert(N == _)
+
+        pi = np.sum(mu, axis=1)
+        Q = mu / np.dot( pi.reshape(-1, 1), np.ones((1, N)) )
+        Q = np.array(Q)
+
+        return Q
+
+    ###### added by Jing Zhang (jingzbu@gmail.com)
+    def P_est(self, Q):
+        """
+        Estimate the new transition matrix P
+        Example
+        ----------------
+        >>> Q = [[ 0.83333333,  0.16666667],
+                 [ 0.5,         0.5       ]]
+        >>> Q = np.array(Q)
+        >>> print P_est(Q)
+            [[ 0.83333333  0.16666667  0.          0.        ]
+             [ 0.          0.          0.5         0.5       ]
+             [ 0.83333333  0.16666667  0.          0.        ]
+             [ 0.          0.          0.5         0.5       ]]
+        """
+        N, _ = Q.shape
+        assert(N == _)
+        P1 = np.zeros((N, N**2))
+        for j in range(0, N):
+            for i in range( j * N, (j + 1) * N ):
+                P1[j, i] = Q[j, i - j * N]
+        P = np.tile(P1, (N, 1))
+
+        return P
+
+    ###### added by Jing Zhang (jingzbu@gmail.com)
+    def G_est(self, Q):
+        """
+        Estimate the gradient
+        Example
+        ----------------
+        >>> Q = [[ 0.83333333,  0.16666667],
+                 [ 0.5,         0.5       ]]
+        >>> print G_est(Q)
+            [[ 0.16666667  0.83333333  0.5         0.5       ]]
+        """
+        N, _ = Q.shape
+        assert(N == _)
+        alpha = 1 - Q
+        G = alpha.reshape(1, N**2)
+
+        return G
+
+    ###### added by Jing Zhang (jingzbu@gmail.com)
+    def H_est(self, mu):
+        """
+        Estimate the Hessian
+        Example
+        ----------------
+        >>> mu = [[0.625,  0.125],  [0.125,  0.125]]
+        >>> print H_est(mu)
+        [[ 0.04444444 -0.22222222  0.          0.        ]
+         [-1.11111111  5.55555556  0.          0.        ]
+         [ 0.          0.          2.         -2.        ]
+         [ 0.          0.         -2.          2.        ]]
+        """
+        mu = np.array(mu)
+        N, _ = mu.shape
+        assert(N == _)
+
+        H = np.zeros((N, N, N, N))
+        for i in range(0, N):
+            for j in range(0, N):
+                for k in range(0, N):
+                    for l in range(0, N):
+                        if k != i:
+                            H[i, j, k, l] = 0
+                        elif l == j:
+                            H[i, j, k, l] = 1.0 / mu[i, j] - 1.0 / (sum(mu[i, :])) - \
+                            ((sum(mu[i, :])) - mu[i, j]) / ((sum(mu[i, :]))**2)
+                        else:
+                            H[i, j, k, l] = - ((sum(mu[i, :])) - mu[i, j]) / \
+                                ((sum(mu[i, :]))**2)
+        H = np.reshape(H, (N**2, N**2))
+
+        return H
+
+    ###### added by Jing Zhang (jingzbu@gmail.com)
+    def Sigma_est(self, P, mu):
+        """
+        Estimate the covariance matrix of the empirical measure (Note that here
+        'empirical measure' means differently than elsewhere in the package)
+        Example
+        ----------------
+        >>> P = [[ 0.83333333,  0.16666667,  0.,          0.        ],
+                 [ 0.,          0.,          0.5,         0.5       ],
+                 [ 0.83333333,  0.16666667,  0.,          0.        ],
+                 [ 0.,          0.,          0.5,         0.5       ]]
+        >>> mu = [[0.625,  0.125],  [0.125,  0.125]]
+        >>> print Sigma_est(P, mu)
+            [[ 0.62499298 -0.15624953 -0.15624953 -0.31249953]
+             [-0.15624953  0.06250047  0.06250047  0.03125047]
+             [-0.15624953  0.06250047  0.06250047  0.03125047]
+             [-0.31249953  0.03125047  0.03125047  0.25000047]]
+        """
+        mu = np.array(mu)
+        N, _ = mu.shape
+        assert(N == _)
+
+        muVec = np.reshape(mu, (1, N**2))
+        I = np.matrix(np.identity(N**2))
+        M = 1000
+
+        PP = np.zeros((M, N**2, N**2))
+        for m in range(1, M):
+            PP[m] = LA.matrix_power(P, m)
+
+        series = np.zeros((1, M))
+
+        Sigma = np.zeros((N**2, N**2))
+        for i in range(0, N**2):
+            for j in range(0, N**2):
+                for m in range(1, M):
+                    series[0, m] = muVec[0, i] * (PP[m][i, j] - muVec[0, j]) + \
+                                    muVec[0, j] * (PP[m][j, i] - muVec[0, i])
+                Sigma[i, j] = muVec[0, i] * (I[i, j] - muVec[0, j]) + \
+                                sum(series[0, :])
+
+        # Ensure Sigma to be symmetric
+        Sigma = (1.0 / 2) * (Sigma + np.transpose(Sigma))
+
+        # Ensure Sigma to be positive semi-definite
+        D, V = LA.eig(Sigma)
+        D = np.diag(D)
+        Q, R = LA.qr(V)
+        for i in range(0, N**2):
+            if D[i, i] < 0:
+                D[i, i] = 0
+        Sigma = np.dot(np.dot(Q, D), LA.inv(Q))
+
+        return Sigma
+
     # def detect(self, data_file, nominal_rg = [0, 1000], rg_type='time',  max_detect_num=None):
     def detect(self, data_file, ref_file=None):
         """ main function to detect.
@@ -173,6 +334,66 @@ class StoDetector (WindowDetector):
         # self.norm_em = self.get_em(rg=nominal_rg, rg_type=rg_type)
         self.norm_em = self.cal_norm_em()
         # self.desc['norm_em'] = self.norm_em
+        if  self.desc['method'] == 'mb':
+            self.mu = adjust_mat(self.norm_em)
+            print(self.mu)
+            # mu = np.array(mu)
+            mu = self.mu
+            N, _ = mu.shape
+            assert(N == _)
+
+            ########### Added by Jing Zhang (jingzbu@gmail.com)
+            # for model-based method only
+            Q = self.Q_est(self.mu)
+            Nq, _ = Q.shape
+            assert(Nq == _)
+            #assert(Nq == cardinality)
+            P = self.P_est(Q)  # Get the pair (new) transition matrix
+            k = 1000
+            PP = LA.matrix_power(P, k)
+            mu = PP[0, :]
+            mu = mu.reshape(N, N)
+            self.mu = mu
+
+            self.G = self.G_est(Q)  # Get the gradient estimate
+            self.H = self.H_est(self.mu)  # Get the Hessian estimate
+            Sigma = self.Sigma_est(P, self.mu)  # Get the covariance matrix estimate
+
+            # Generate samples of W
+            self.SampleNum = 1000
+            W_mean = np.zeros((1, N**2))
+            self.W = np.random.multivariate_normal(W_mean[0, :], Sigma, (1, self.SampleNum))
+
+        if  self.desc['method'] == 'mfmb' or self.desc['method'] == 'robust':
+            pmf, Pmb = self.norm_em
+            self.mu = adjust_mat(Pmb)
+            print(self.mu)
+            # mu = np.array(mu)
+            mu = self.mu
+            N, _ = mu.shape
+            assert(N == _)
+
+            ########### Added by Jing Zhang (jingzbu@gmail.com)
+            # for model-based method only
+            Q = self.Q_est(self.mu)
+            Nq, _ = Q.shape
+            assert(Nq == _)
+            #assert(Nq == cardinality)
+            P = self.P_est(Q)  # Get the pair (new) transition matrix
+            k = 1000
+            PP = LA.matrix_power(P, k)
+            mu = PP[0, :]
+            mu = mu.reshape(N, N)
+            self.mu = mu
+
+            self.G = self.G_est(Q)  # Get the gradient estimate
+            self.H = self.H_est(self.mu)  # Get the Hessian estimate
+            Sigma = self.Sigma_est(P, self.mu)  # Get the covariance matrix estimate
+
+            # Generate samples of W
+            self.SampleNum = 1000
+            W_mean = np.zeros((1, N**2))
+            self.W = np.random.multivariate_normal(W_mean[0, :], Sigma, (1, self.SampleNum))
 
         win_size = self.desc['win_size']
         interval = self.desc['interval']
@@ -188,12 +409,16 @@ class StoDetector (WindowDetector):
                 self.rg = [time, time+win_size] # For two window method
                 em = self.data_file.get_em(rg=self.rg, rg_type=rg_type)
                 entropy = self.I(em, norm_em=self.norm_em)
+                # print(entropy[0])
+                # assert(1 == 2)
                 flow_num = self.get_flow_num_between(self.rg, rg_type)
-                threshold = self.get_threshold(flow_num)
-                self.record(entropy=entropy, winT=time,
-                            threshold=threshold, em=em)
+                threshold_mf, threshold_mb = self.get_threshold(flow_num)
+                print(threshold_mf)
+                print(threshold_mb)
+                # assert(1 == 2)
+                self.record(entropy=entropy, winT=time, threshold=0, em=em)
 
-                alarm_num = sum([1 for e in entropy if e >= threshold])
+                alarm_num = sum([1 for e in entropy if e >= threshold_mf or e >= threshold_mb])
                 marker = '.' if alarm_num == 0 else str(alarm_num)
                 self.progress_bar.update(i-1, time, marker)
             except FetchNoDataException:
@@ -205,7 +430,7 @@ class StoDetector (WindowDetector):
             time += interval
 
         self.detect_num = i - 1
-        # self.save_addi_info()
+        self.save_addi_info()
 
         # record the parameters
         self.record_data['desc'] = dict((k, v) \
@@ -213,23 +438,72 @@ class StoDetector (WindowDetector):
 
         return self.record_data
 
-    def get_threshold(self, flow_num):
-        entropy_th = self.desc.get('entropy_th')
-        if entropy_th:
-            return entropy_th
-        hoeff_far = self.desc.get('hoeff_far')
-        if hoeff_far:
-            return hoeffding_rule(flow_num, hoeff_far, self.desc['ccoef'])
+    # modified by Jing Zhang (jingzbu@gmail.com)
+    def hoeffding_rule(self, n, false_alarm_rate):
+        """ hoeffding rule with linear correction term
 
-    # def save_addi_info(self, **kwargs):
-    #     """  save additional information"""
-    #     if self.desc.get('entropy_th') is not None:
-    #         self.record_data['threshold'] = [self.desc['entropy_th']] * self.detect_num
-    #     elif self.desc.get('hoeff_far') is not None:
-    #         self.record_data['threshold'] = self.get_hoeffding_threshold(self.desc['hoeff_far'])
-    #     else:
-    #         self.record_data['threshold'] = None
+        Parameters:
+        --------------
+        n : int
+            Number of flows in the window
+        false_alarm_rate : float
+            false alarm rate
 
+        Returns
+        --------------
+        ht : float
+            hoeffding threshold
+
+
+        """
+        # return -1.0 / n * log(false_alarm_rate) + self.desc['ccoef'] * log(n) / n
+        # return -1.0 / n * log(false_alarm_rate)
+
+        if self.desc['method'] == 'mf':
+            # for model-free method only
+            # added by Jing Zhang (jingzbu@gmail.com)
+            # the following threshold is suggested in http://arxiv.org/abs/0909.2234
+            # QuantLevel_1 = self.desc['fea_option'].get('dist_to_center')
+            QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
+            # QuantLevel_3 = self.desc['fea_option'].get('cluster')
+            return 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, QuantLevel_2 - 1)
+        if self.desc['method'] == 'mb':
+            # added by Jing Zhang (jingzbu@gmail.com)
+            # for model-based method only
+            G = self.G
+            H = self.H
+            W = self.W
+            # Estimate K-L divergence using 2nd-order Taylor expansion
+            KL = []
+            for j in range(0, self.SampleNum):
+                t = (1.0 / sqrt(n)) * np.dot(G, W[0, j, :]) + \
+                        (1.0 / 2) * (1.0 / n) * \
+                            np.dot(np.dot(W[0, j, :], H), W[0, j, :])
+                KL.append(t)
+            # Get the estimated threshold
+            eta = prctile(KL, 100 * (1 - false_alarm_rate))
+            assert(eta < 10)
+            return eta
+        if self.desc['method'] == 'mfmb' or self.desc['method'] == 'robust':
+            # QuantLevel_1 = self.desc['fea_option'].get('dist_to_center')
+            QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
+            # print(QuantLevel_2)
+            # assert(1 == 2)
+            # QuantLevel_3 = self.desc['fea_option'].get('cluster')
+            eta1 = 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, QuantLevel_2 - 1)
+            G = self.G
+            H = self.H
+            W = self.W
+            # Estimate K-L divergence using 2nd-order Taylor expansion
+            KL = []
+            for j in range(0, self.SampleNum):
+                t = (1.0 / sqrt(n)) * np.dot(G, W[0, j, :]) + \
+                        (1.0 / 2) * (1.0 / n) * \
+                            np.dot(np.dot(W[0, j, :], H), W[0, j, :])
+                KL.append(t)
+            # Get the estimated threshold
+            eta2 = prctile(KL, 100 * (1 - false_alarm_rate)).real
+            return eta1, eta2
 
     def get_hoeffding_threshold(self, false_alarm_rate):
         """calculate the threshold of hoeffiding rule,
@@ -248,16 +522,69 @@ class StoDetector (WindowDetector):
         ----------------
         :math: `threshold = -1 / |G| log(epsilon)` where |G| is the number of flows in
         the window and `epsilon` is the false alarm_rate
-
         """
         res = []
         for i in xrange(self.detect_num):
             flow_seq = self._get_flow_seq(i)
             flow_num_in_win = flow_seq[1] - flow_seq[0] + 1
-            threshold = hoeffding_rule(flow_num_in_win, false_alarm_rate)
+            threshold = self.hoeffding_rule(flow_num_in_win, false_alarm_rate)
             res.append(threshold)
-
         return res
+
+    def save_threshold(self, data_file):
+        """ calculate threshold for each window and save it
+        """
+        rg_type = self.desc['win_type']
+        max_detect_num = self.desc['max_detect_num']
+
+        self.data_file = data_file
+
+        win_size = self.desc['win_size']
+        interval = self.desc['interval']
+
+        time = self.desc['fr_win_size'] if ('flow_rate' in self.desc['fea_option'].keys()) else 0
+
+        threshold = []
+        i = 0
+        while True:
+            i += 1
+            if max_detect_num and i > max_detect_num:
+                break
+            try:
+                self.rg = [time, time+win_size] # For two window method
+                flow_num = self.get_flow_num_between(self.rg, rg_type)
+                threshold.append(self.get_threshold(flow_num))
+            except FetchNoDataException:
+                print('there is no data to detect in this window')
+            except DataEndException:
+                print('\nreach data end, break')
+                break
+            time += interval
+        # print(threshold)
+        # assert(1 == 2)
+        return threshold
+
+    def get_threshold(self, flow_num):
+        entropy_th = self.desc.get('entropy_th')
+        if entropy_th:
+            return entropy_th
+        hoeff_far = self.desc.get('hoeff_far')
+        if hoeff_far:
+            return self.hoeffding_rule(flow_num, hoeff_far)
+
+    def save_addi_info(self, **kwargs):
+        """  save additional information"""
+        # get the threshold:
+        if self.desc.get('entropy_th') is not None:
+            self.record_data['threshold'] = [self.desc['entropy_th']] * self.detect_num
+        elif self.desc.get('hoeff_far') is not None:
+            self.record_data['threshold'] = self.get_hoeffding_threshold(self.desc['hoeff_far'])
+        else:
+            self.record_data['threshold'] = None
+
+        # record the parameters
+        self.record_data['desc'] = dict((k, v) \
+                for k, v in self.desc.iteritems() if is_basic_type(v))
 
     def get_flow_num_between(self, rg, rg_type):
         st, ed = self.data_file.data.get_where(rg, rg_type)
@@ -503,21 +830,23 @@ class FBAnoDetector(StoDetector):
 
         rt = self.record_data['winT']
         mf, mb = zip(*self.record_data['entropy'])
-        threshold = self.record_data['threshold']
+        threshold_mf, threshold_mb = zip(*self.record_data['threshold'])  # added by Jing Zhang (jingzbu@gmail.com)
+        # print(threshold_mf)
+        # assert(1 == 2)
 
         if csv:
-            save_csv(csv, ['rt', 'mf', 'mb', 'threshold'], rt, mf, mb, threshold)
+            save_csv(csv, ['rt', 'mf', 'mb', 'threshold_mf', 'threshold_mb'], rt, mf, mb, threshold_mf, threshold_mb)
 
         if figure_ is None: figure_ = plt.figure()
         # import ipdb;ipdb.set_trace()
-        plot_points(rt, mf, threshold,
+        plot_points(rt, mf, threshold_mf,
                 figure_ = figure_,
                 xlabel_=self.desc['win_type'], ylabel_= 'entropy',
                 subplot_ = subplot_[0],
                 title_ = title_[0],
                 pic_name=None, pic_show=False,
                 *args, **kwargs)
-        plot_points(rt, mb, threshold,
+        plot_points(rt, mb, threshold_mb,
                 figure_ = figure_,
                 xlabel_=self.desc['win_type'], ylabel_= 'entropy',
                 subplot_ = subplot_[1],

@@ -48,6 +48,7 @@ class QuantizeDataHandler(DataHandler):
         fea_option = desc['fea_option']
         self.fea_option  = fea_option
         self.direct_fea_list = fea_option.keys()
+        # self.fea_QN, self.global_fea_range = zip(*fea_option.values())
         self.fea_QN, self.global_fea_range = zip(*fea_option.values())
         self.global_fea_range = np.array(self.global_fea_range, dtype=np.float)
 
