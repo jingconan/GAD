@@ -151,7 +151,7 @@ class StoDetector (WindowDetector):
         rg_type = self.desc['win_type']
         return self.ref_file.get_em(rg=nominal_rg, rg_type=rg_type)
 
-        ###### added by Jing Zhang (jingzbu@gmail.com)
+    ###### added by Jing Zhang (jingzbu@gmail.com)
     def Q_est(self, mu):
         """
         Estimate the original transition matrix Q
@@ -334,6 +334,8 @@ class StoDetector (WindowDetector):
         # self.norm_em = self.get_em(rg=nominal_rg, rg_type=rg_type)
         self.norm_em = self.cal_norm_em()
         # self.desc['norm_em'] = self.norm_em
+
+        ########### Added by Jing Zhang (jingzbu@gmail.com)
         if  self.desc['method'] == 'mb':
             self.mu = adjust_mat(self.norm_em)
             print(self.mu)
@@ -342,7 +344,6 @@ class StoDetector (WindowDetector):
             N, _ = mu.shape
             assert(N == _)
 
-            ########### Added by Jing Zhang (jingzbu@gmail.com)
             # for model-based method only
             Q = self.Q_est(self.mu)
             Nq, _ = Q.shape
@@ -364,16 +365,16 @@ class StoDetector (WindowDetector):
             W_mean = np.zeros((1, N**2))
             self.W = np.random.multivariate_normal(W_mean[0, :], Sigma, (1, self.SampleNum))
 
+        ########### Added by Jing Zhang (jingzbu@gmail.com)
         if  self.desc['method'] == 'mfmb' or self.desc['method'] == 'robust':
             pmf, Pmb = self.norm_em
             self.mu = adjust_mat(Pmb)
-            print(self.mu)
+            # print(self.mu)
             # mu = np.array(mu)
             mu = self.mu
             N, _ = mu.shape
             assert(N == _)
 
-            ########### Added by Jing Zhang (jingzbu@gmail.com)
             # for model-based method only
             Q = self.Q_est(self.mu)
             Nq, _ = Q.shape
@@ -459,16 +460,17 @@ class StoDetector (WindowDetector):
         # return -1.0 / n * log(false_alarm_rate) + self.desc['ccoef'] * log(n) / n
         # return -1.0 / n * log(false_alarm_rate)
 
+        # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mf':
             # for model-free method only
-            # added by Jing Zhang (jingzbu@gmail.com)
             # the following threshold is suggested in http://arxiv.org/abs/0909.2234
             # QuantLevel_1 = self.desc['fea_option'].get('dist_to_center')
             QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
             # QuantLevel_3 = self.desc['fea_option'].get('cluster')
             return 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, QuantLevel_2 - 1)
+
+        # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mb':
-            # added by Jing Zhang (jingzbu@gmail.com)
             # for model-based method only
             G = self.G
             H = self.H
@@ -481,9 +483,11 @@ class StoDetector (WindowDetector):
                             np.dot(np.dot(W[0, j, :], H), W[0, j, :])
                 KL.append(t)
             # Get the estimated threshold
-            eta = prctile(KL, 100 * (1 - false_alarm_rate))
-            assert(eta < 10)
+            eta = prctile(KL, 100 * (1 - false_alarm_rate)).real
+            # assert(eta < 10)
             return eta
+
+        # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mfmb' or self.desc['method'] == 'robust':
             # QuantLevel_1 = self.desc['fea_option'].get('dist_to_center')
             QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
@@ -733,12 +737,6 @@ class ModelFreeAnoDetector(StoDetector):
     def I(self, em, norm_em):
         return I1(em, norm_em)
 
-    # def get_em(self, rg, rg_type):
-    #     """get empirical measure"""
-    #     pmf, Pmb, mpmb = self.data_file.get_em(rg, rg_type)
-        # return pmf, Pmb, mpmb
-    #     return pmf
-
     # plot module added by Jing Zhang (jingzbu@gmail.com) 
     def plot(self, far=None, figure_=None, 
             title_='model free',
@@ -764,19 +762,11 @@ class ModelFreeAnoDetector(StoDetector):
         if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
         if pic_show: plt.show()
 
-
 class ModelBaseAnoDetector(StoDetector):
     """ Model based approach, use Markovian Assumption
     """
     def I(self, em, norm_em):
         return I2(em, norm_em)
-        # d_Pmb, d_mpmb = em
-        # Pmb, mpmb = norm_em
-        # return I2(d_Pmb, d_mpmb, Pmb, mpmb)
-
-    # def get_em(self, rg, rg_type):
-    #     pmf, Pmb, mpmb = self.data_file.get_em(rg, rg_type)
-    #     return Pmb, mpmb
 
     # plot module added by Jing Zhang (jingzbu@gmail.com) 
     def plot(self, far=None, figure_=None,
@@ -803,7 +793,6 @@ class ModelBaseAnoDetector(StoDetector):
         if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
         if pic_show: plt.show()
 
-
 # from .Ident import *
 from . import Ident
 class FBAnoDetector(StoDetector):
@@ -811,51 +800,68 @@ class FBAnoDetector(StoDetector):
     and model based approaches separately since some intemediate results are reused.
     """
     def I(self, em, norm_em):
-        # d_pmf, d_Pmb, d_mpmb = em
-        # pmf, Pmb, mpmb = norm_em
         d_pmf, d_Pmb = em
         pmf, Pmb = norm_em
         return I1(d_pmf, pmf), I2(d_Pmb, Pmb)
 
-    # def get_em(self, rg, rg_type):
-    #     """get empirical measure"""
-    #     pmf, Pmb, mpmb = self.data_file.get_em(rg, rg_type)
-    #     return pmf, Pmb, mpmb
-
-    def plot(self, far=None, figure_=None, subplot_=(211, 212),
-            title_=['model free', 'model based'],
+    # plot module added by Jing Zhang (jingzbu@gmail.com) 
+    def plot(self, far=None, figure_=None,
+            title_='model based',
             pic_name=None, pic_show=False, csv=None,
             *args, **kwargs):
         if not plt: self.save_plot_as_csv()
 
         rt = self.record_data['winT']
         mf, mb = zip(*self.record_data['entropy'])
-        threshold_mf, threshold_mb = zip(*self.record_data['threshold'])  # added by Jing Zhang (jingzbu@gmail.com)
-        # print(threshold_mf)
-        # assert(1 == 2)
+        threshold_mf, threshold_mb = zip(*self.record_data['threshold'])  
 
         if csv:
             save_csv(csv, ['rt', 'mf', 'mb', 'threshold_mf', 'threshold_mb'], rt, mf, mb, threshold_mf, threshold_mb)
 
         if figure_ is None: figure_ = plt.figure()
         # import ipdb;ipdb.set_trace()
-        plot_points(rt, mf, threshold_mf,
+        plot_points(rt, mb, np.dot(1.5, threshold_mb),  # change 1.5 back to 1.0 after doing experiments for heauristic refinement
                 figure_ = figure_,
                 xlabel_=self.desc['win_type'], ylabel_= 'entropy',
-                subplot_ = subplot_[0],
-                title_ = title_[0],
-                pic_name=None, pic_show=False,
-                *args, **kwargs)
-        plot_points(rt, mb, threshold_mb,
-                figure_ = figure_,
-                xlabel_=self.desc['win_type'], ylabel_= 'entropy',
-                subplot_ = subplot_[1],
-                title_ = title_[1],
+                title_ = title_,
                 pic_name=None, pic_show=False,
                 *args, **kwargs)
         if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
         if pic_show: plt.show()
 
+    #def plot(self, far=None, figure_=None, subplot_=(211, 212),
+    #        title_=['model free', 'model based'],
+    #        pic_name=None, pic_show=False, csv=None,
+    #        *args, **kwargs):
+    #    if not plt: self.save_plot_as_csv()
+
+    #    rt = self.record_data['winT']
+    #    mf, mb = zip(*self.record_data['entropy'])
+    #    threshold_mf, threshold_mb = zip(*self.record_data['threshold'])  # added by Jing Zhang (jingzbu@gmail.com)
+    #    # print(threshold_mf)
+    #    # assert(1 == 2)
+
+    #    if csv:
+    #        save_csv(csv, ['rt', 'mf', 'mb', 'threshold_mf', 'threshold_mb'], rt, mf, mb, threshold_mf, threshold_mb)
+
+    #    if figure_ is None: figure_ = plt.figure()
+    #    # import ipdb;ipdb.set_trace()
+    #    plot_points(rt, mf, threshold_mf,
+    #            figure_ = figure_,
+    #            xlabel_=self.desc['win_type'], ylabel_= 'entropy',
+    #            subplot_ = subplot_[0],
+    #            title_ = title_[0],
+    #            pic_name=None, pic_show=False,
+    #            *args, **kwargs)
+    #    plot_points(rt, mb, threshold_mb,
+    #            figure_ = figure_,
+    #            xlabel_=self.desc['win_type'], ylabel_= 'entropy',
+    #            subplot_ = subplot_[1],
+    #            title_ = title_[1],
+    #            pic_name=None, pic_show=False,
+    #            *args, **kwargs)
+    #    if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
+    #    if pic_show: plt.show()
 
     def export_abnormal_flow(self, fname, entropy_threshold=None,
             ab_win_portion=None, ab_win_num=None):
@@ -1044,7 +1050,6 @@ class FBAnoDetector(StoDetector):
         ident.set_detect_result([(1 if i in ab_idx else 0) for i in xrange(len(nu_set))])
         return ident.filter_states(ab_idx, portion, ab_states_num)
 
-
     # def get_ab_flow_seq_mb(self, entropy_threshold=None, ab_win_portion=None, ab_win_num=None):
         # mf, mb = zip(*self.record_data['entropy'])
         # ab_idx = self.find_abnormal_windows(mb, entropy_threshold, ab_win_portion, ab_win_num)
@@ -1187,7 +1192,6 @@ class PeriodStoDetector(DynamicStoDetector):
     #     plot_points(rt[:i], ep[:i], threshold,
     #             xlabel_=self.desc['win_type'], ylabel_= 'entropy',
     #             *args, **kwargs)
-
 
 class DummyShiftWindowDetector(DynamicStoDetector):
     """ For data in window i, simply using the data in widnow i-shift to

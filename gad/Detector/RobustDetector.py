@@ -211,9 +211,9 @@ class PLManager(object):
         print('-' * 50)
         # return mf_D, mb_D
 
-        gam = 5
-        r = 0.1
-        epsi = 0.001
+        gam = 1e8
+        r = 0.5
+        epsi = 1e-8
         return HeuristicRefinePL(mf_D, lamb_mf, gam, r, epsi), \
                 HeuristicRefinePL(mb_D, lamb_mb, gam, r, epsi)
 
@@ -243,8 +243,6 @@ class RobustDetector(StoDetector.FBAnoDetector):
 
         parser.add_argument('--ref_data', default=None, type=str,
                 help="""name for reference file""")
-
-
 
     def detect(self, data_file, ref_file=None):
         if ref_file is None:
@@ -299,7 +297,7 @@ class RobustDetector(StoDetector.FBAnoDetector):
 
         lamb_mf, lamb_mb = zip(*StoDetector.FBAnoDetector.save_threshold(self, data_file))
         lamb_mf = np.amax((np.array(lamb_mb)))
-        lamb_mb = 20*np.amax((np.array(lamb_mb)))
+        lamb_mb = np.amax((np.array(lamb_mb)))
         print(lamb_mf)
         print(lamb_mb)
         # assert(1 == 2)
@@ -336,7 +334,6 @@ class RobustDetector(StoDetector.FBAnoDetector):
             if self.PL_enable[0] is None or self.PL_enable[1] is None:
                 raise Exception('lamb is too small, probably you have too '
                         'little candidates')
-        # assert(1 == 2)
         StoDetector.FBAnoDetector.detect(self, data_file, ref_file)
 
     def I(self, em, **kwargs):

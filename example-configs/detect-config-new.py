@@ -6,12 +6,12 @@ ROOT = ''
 
 #ANO_ANA_DATA_FILE = './Share/AnoAna.txt'
 DETECTOR_DESC = dict(
-        interval=100,
-        win_size=100,
+        interval=1000,
+        win_size=1000,
         win_type='time', # 'time'|'flow'
         fr_win_size=100, # window size for estimation of flow rate
         hoeff_far = 0.001,
-        fea_option = {'flow_size':(8, [0, 10000])},
+        fea_option = {'flow_size':(4, [0, 15000])},
         #ano_ana_data_file = ANO_ANA_DATA_FILE,
         normal_rg = None,
 	norm_win_ratio = 10,
