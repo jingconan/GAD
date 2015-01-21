@@ -820,7 +820,7 @@ class FBAnoDetector(StoDetector):
 
         if figure_ is None: figure_ = plt.figure()
         # import ipdb;ipdb.set_trace()
-        plot_points(rt, mb, np.dot(1.5, threshold_mb),  # change 1.5 back to 1.0 after doing experiments for heauristic refinement
+        plot_points(rt, mb, np.dot(1.0, threshold_mb),  # change 1.5 back to 1.0 after doing experiments for heauristic refinement
                 figure_ = figure_,
                 xlabel_=self.desc['win_type'], ylabel_= 'entropy',
                 title_ = title_,
