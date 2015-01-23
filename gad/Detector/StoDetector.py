@@ -361,7 +361,7 @@ class StoDetector (WindowDetector):
             Sigma = self.Sigma_est(P, self.mu)  # Get the covariance matrix estimate
 
             # Generate samples of W
-            self.SampleNum = 1000
+            self.SampleNum = 5000
             W_mean = np.zeros((1, N**2))
             self.W = np.random.multivariate_normal(W_mean[0, :], Sigma, (1, self.SampleNum))
 
@@ -392,7 +392,7 @@ class StoDetector (WindowDetector):
             Sigma = self.Sigma_est(P, self.mu)  # Get the covariance matrix estimate
 
             # Generate samples of W
-            self.SampleNum = 1000
+            self.SampleNum = 5000
             W_mean = np.zeros((1, N**2))
             self.W = np.random.multivariate_normal(W_mean[0, :], Sigma, (1, self.SampleNum))
 
@@ -812,6 +812,7 @@ class FBAnoDetector(StoDetector):
         if not plt: self.save_plot_as_csv()
 
         rt = self.record_data['winT']
+        rt = [t/3600 for t in rt]
         mf, mb = zip(*self.record_data['entropy'])
         threshold_mf, threshold_mb = zip(*self.record_data['threshold'])  
 
@@ -826,6 +827,8 @@ class FBAnoDetector(StoDetector):
                 title_ = title_,
                 pic_name=None, pic_show=False,
                 *args, **kwargs)
+        plt.ylabel('divergence')
+        plt.xlabel('time (h)')
         if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
         if pic_show: plt.show()
 

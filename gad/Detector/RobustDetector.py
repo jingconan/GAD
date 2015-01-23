@@ -299,6 +299,7 @@ class RobustDetector(StoDetector.FBAnoDetector):
         lamb_mf = np.amax((np.array(lamb_mb)))
         # lamb_mb = np.amax((np.array(lamb_mb)))
         lamb_mb = 0.8 * np.amin((np.array(lamb_mb))) + 0.2 * np.amax((np.array(lamb_mb)))
+        # lamb_mb = 0.0379389039126
         print(lamb_mf)
         print(lamb_mb)
         # assert(1 == 2)
