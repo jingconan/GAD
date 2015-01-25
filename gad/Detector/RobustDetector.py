@@ -237,6 +237,10 @@ class RobustDetector(StoDetector.FBAnoDetector):
                 not specfied, its default value is
                 "desc['dump_folder']/PLManager_scheck.pk" """)
 
+        parser.add_argument('--alpha', default=0.5, type=float,
+                help="""weight of minimum threshold determining the up-bound of nominal cross-entropy;
+                should be within (0, 1), default=0.5""")
+
         parser.add_argument('--lamb', default=None, type=float,
                 help="""upbound for nominal cross entropy, if lamb=0, disable
                 Probability Law Identification""")
@@ -296,9 +300,11 @@ class RobustDetector(StoDetector.FBAnoDetector):
         self.W = np.random.multivariate_normal(W_mean[0, :], Sigma, (1, self.SampleNum))
 
         lamb_mf, lamb_mb = zip(*StoDetector.FBAnoDetector.save_threshold(self, data_file))
-        lamb_mf = np.amax((np.array(lamb_mb)))
+        # lamb_mf = np.amax((np.array(lamb_mf)))
         # lamb_mb = np.amax((np.array(lamb_mb)))
-        lamb_mb = 0.8 * np.amin((np.array(lamb_mb))) + 0.2 * np.amax((np.array(lamb_mb)))
+        alpha = self.desc['alpha']
+        lamb_mf = alpha * np.amin((np.array(lamb_mf))) + (1 - alpha) * np.amax((np.array(lamb_mf))) + 100
+        lamb_mb = alpha * np.amin((np.array(lamb_mb))) + (1 - alpha) * np.amax((np.array(lamb_mb)))
         # lamb_mb = 0.0379389039126
         print(lamb_mf)
         print(lamb_mb)
