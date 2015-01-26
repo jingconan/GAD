@@ -28,5 +28,6 @@ test.sh
 build/*
 d3-plot-engine/node_modules/*
 data/*
+.idea/*
 
 Benchmarks/benDet.py
