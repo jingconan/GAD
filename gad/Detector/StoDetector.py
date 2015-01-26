@@ -406,22 +406,22 @@ class StoDetector (WindowDetector):
             i += 1
             if max_detect_num and i > max_detect_num:
                 break
+            if rg_type == 'time' : print('time: %f' %(time))
+            else: print('flow: %s' %(time))
+
             try:
                 self.rg = [time, time+win_size] # For two window method
                 em = self.data_file.get_em(rg=self.rg, rg_type=rg_type)
                 entropy = self.I(em, norm_em=self.norm_em)
-                # print(entropy[0])
-                # assert(1 == 2)
-                flow_num = self.get_flow_num_between(self.rg, rg_type)
-                threshold_mf, threshold_mb = self.get_threshold(flow_num)
-                print(threshold_mf)
-                print(threshold_mb)
+                # flow_num = self.get_flow_num_between(self.rg, rg_type)
+                # threshold_mf, threshold_mb = self.get_threshold(flow_num)
+                # print(threshold_mf)
+                # print(threshold_mb)
                 # assert(1 == 2)
                 self.record(entropy=entropy, winT=time, threshold=0, em=em)
-
-                alarm_num = sum([1 for e in entropy if e >= threshold_mf or e >= threshold_mb])
-                marker = '.' if alarm_num == 0 else str(alarm_num)
-                self.progress_bar.update(i-1, time, marker)
+                # alarm_num = sum([1 for e in entropy if e >= threshold_mf or e >= threshold_mb])
+                # marker = '.' if alarm_num == 0 else str(alarm_num)
+                # self.progress_bar.update(i-1, time, marker)
             except FetchNoDataException:
                 print('there is no data to detect in this window')
             except DataEndException:
@@ -554,6 +554,9 @@ class StoDetector (WindowDetector):
             i += 1
             if max_detect_num and i > max_detect_num:
                 break
+            if rg_type == 'time' : print('time: %f' %(time))
+            else: print('flow: %s' %(time))
+
             try:
                 self.rg = [time, time+win_size] # For two window method
                 flow_num = self.get_flow_num_between(self.rg, rg_type)
@@ -804,66 +807,66 @@ class FBAnoDetector(StoDetector):
         pmf, Pmb = norm_em
         return I1(d_pmf, pmf), I2(d_Pmb, Pmb)
 
-    # plot module added by Jing Zhang (jingzbu@gmail.com)
-    def plot(self, far=None, figure_=None,
-            title_='model based',
-            pic_name=None, pic_show=False, csv=None,
-            *args, **kwargs):
-        if not plt: self.save_plot_as_csv()
-
-        rt = self.record_data['winT']
-        rt = [t/3600 for t in rt]
-        mf, mb = zip(*self.record_data['entropy'])
-        threshold_mf, threshold_mb = zip(*self.record_data['threshold'])
-
-        if csv:
-            save_csv(csv, ['rt', 'mf', 'mb', 'threshold_mf', 'threshold_mb'], rt, mf, mb, threshold_mf, threshold_mb)
-
-        if figure_ is None: figure_ = plt.figure()
-        # import ipdb;ipdb.set_trace()
-        plot_points(rt, mb, threshold_mb,
-                figure_ = figure_,
-                xlabel_=self.desc['win_type'], ylabel_= 'entropy',
-                title_ = title_,
-                pic_name=None, pic_show=False,
-                *args, **kwargs)
-        plt.ylabel('divergence')
-        plt.xlabel('time (h)')
-        if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
-        if pic_show: plt.show()
-
-    # def plot(self, far=None, figure_=None, subplot_=(211, 212),
-    #        title_=['model free', 'model based'],
-    #        pic_name=None, pic_show=False, csv=None,
-    #        *args, **kwargs):
-    #    if not plt: self.save_plot_as_csv()
-    #    rt = self.record_data['winT']
-    #    mf, mb = zip(*self.record_data['entropy'])
-    #    threshold_mf, threshold_mb = zip(*self.record_data['threshold'])  # added by Jing Zhang (jingzbu@gmail.com)
-    #    # print(threshold_mf)
-    #    # assert(1 == 2)
+    # # plot module added by Jing Zhang (jingzbu@gmail.com)
+    # def plot(self, far=None, figure_=None,
+    #         title_='model based',
+    #         pic_name=None, pic_show=False, csv=None,
+    #         *args, **kwargs):
+    #     if not plt: self.save_plot_as_csv()
     #
-    #    if csv:
-    #        save_csv(csv, ['rt', 'mf', 'mb', 'threshold_mf', 'threshold_mb'], rt, mf, mb, threshold_mf, threshold_mb)
+    #     rt = self.record_data['winT']
+    #     rt = [t/3600 for t in rt]
+    #     mf, mb = zip(*self.record_data['entropy'])
+    #     threshold_mf, threshold_mb = zip(*self.record_data['threshold'])
     #
-    #    if figure_ is None: figure_ = plt.figure()
-    #    # import ipdb;ipdb.set_trace()
-    #    plot_points(rt, mf, threshold_mf,
-    #            figure_ = figure_,
-    #            xlabel_=self.desc['win_type'], ylabel_= 'entropy',
-    #            subplot_ = subplot_[0],
-    #            title_ = title_[0],
-    #            pic_name=None, pic_show=False,
-    #            *args, **kwargs)
-    #    plot_points(rt, mb, threshold_mb,
-    #            figure_ = figure_,
-    #            xlabel_=self.desc['win_type'], ylabel_= 'entropy',
-    #            subplot_ = subplot_[1],
-    #            title_ = title_[1],
-    #            pic_name=None, pic_show=False,
-    #            *args, **kwargs)
-    #    if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
-    #    if pic_show: plt.show()
+    #     if csv:
+    #         save_csv(csv, ['rt', 'mf', 'mb', 'threshold_mf', 'threshold_mb'], rt, mf, mb, threshold_mf, threshold_mb)
+    #
+    #     if figure_ is None: figure_ = plt.figure()
+    #     # import ipdb;ipdb.set_trace()
+    #     plot_points(rt, mb, threshold_mb,
+    #             figure_ = figure_,
+    #             xlabel_=self.desc['win_type'], ylabel_= 'entropy',
+    #             title_ = title_,
+    #             pic_name=None, pic_show=False,
+    #             *args, **kwargs)
+    #     plt.ylabel('divergence')
+    #     plt.xlabel('time (h)')
+    #     if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
+    #     if pic_show: plt.show()
+
+    def plot(self, far=None, figure_=None, subplot_=(211, 212),
+           title_=['model free', 'model based'],
+           pic_name=None, pic_show=False, csv=None,
+           *args, **kwargs):
+       if not plt: self.save_plot_as_csv()
+       rt = self.record_data['winT']
+       mf, mb = zip(*self.record_data['entropy'])
+       threshold_mf, threshold_mb = zip(*self.record_data['threshold'])  # added by Jing Zhang (jingzbu@gmail.com)
+       # print(threshold_mf)
+       # assert(1 == 2)
+
+       if csv:
+           save_csv(csv, ['rt', 'mf', 'mb', 'threshold_mf', 'threshold_mb'], rt, mf, mb, threshold_mf, threshold_mb)
+
+       if figure_ is None: figure_ = plt.figure()
+       # import ipdb;ipdb.set_trace()
+       plot_points(rt, mf, threshold_mf,
+               figure_ = figure_,
+               xlabel_=self.desc['win_type'], ylabel_= 'entropy',
+               subplot_ = subplot_[0],
+               title_ = title_[0],
+               pic_name=None, pic_show=False,
+               *args, **kwargs)
+       plot_points(rt, mb, threshold_mb,
+               figure_ = figure_,
+               xlabel_=self.desc['win_type'], ylabel_= 'entropy',
+               subplot_ = subplot_[1],
+               title_ = title_[1],
+               pic_name=None, pic_show=False,
+               *args, **kwargs)
+       if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
+       if pic_show: plt.show()
 
     def export_abnormal_flow(self, fname, entropy_threshold=None,
             ab_win_portion=None, ab_win_num=None):

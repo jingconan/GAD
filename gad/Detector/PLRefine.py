@@ -15,7 +15,6 @@ def GreedySolve(A, gam, cv):
         j_plus = np.argmax(S)
         x[j_plus] = 1
         C = C | set(i for i in dC if A[i,j_plus])
-    # x = np.ones((n,))
     return x
 
 def HeuristicRefinePL(D, lamb, gam0, r, epsi):
@@ -32,8 +31,6 @@ def HeuristicRefinePL(D, lamb, gam0, r, epsi):
     print('cv', cv)
 
     x = []
-    # gam = 50
-    # r = 0.8
     gam = gam0
     while len(x) <= 1 or not np.array_equal(x[-1], x[-2]) or gam > epsi:
         gam = r * gam

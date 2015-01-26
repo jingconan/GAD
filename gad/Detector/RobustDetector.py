@@ -4,7 +4,9 @@ from __future__ import print_function, division, absolute_import
 import itertools, copy
 # import cPickle as pk
 from ..util import zload
-from ..util import del_none_key, np
+from ..util import save_csv, plt
+from .mod_util import plot_points
+from ..util import del_none_key
 
 from . import StoDetector
 from .DetectorLib import I1, I2, adjust_mat
@@ -14,9 +16,9 @@ from .PLRefine import HeuristicRefinePL
 ###### added by Jing Zhang (jingzbu@gmail.com)
 import numpy as np
 from numpy import linalg as LA
-from math import sqrt
-from scipy.stats import chi2
-from matplotlib.mlab import prctile
+# from math import sqrt
+# from scipy.stats import chi2
+# from matplotlib.mlab import prctile
 ##############################################
 
 
@@ -56,9 +58,10 @@ def cal_I_rec(ref_pool, fb_PL, enable=None):
             I_rec[i, :] = [float('inf'), float('inf')]
             continue
 
-        pmf, Pmb = ref_PL
+        # pmf, Pmb = ref_PL
+        _, Pmb = ref_PL
 
-        I_rec[i, 0] = I1(d_pmf, pmf) if enable[0][i] else float('inf')
+        # I_rec[i, 0] = I1(d_pmf, pmf) if enable[0][i] else float('inf')
         I_rec[i, 1] = I2(d_Pmb, Pmb) if enable[1][i] else float('inf')
     return I_rec
 
@@ -196,7 +199,6 @@ class PLManager(object):
         # n = len(I_rec) # window size
         # m = I_rec[0].shape[0] # no. of PLs
         n = I_rec[0].shape[0] # no. of candidate PLs
-        # assert(n == 2)
         m = len(I_rec) # no. of windows
         mf_D = np.zeros((m, n))
         mb_D = np.zeros((m, n))
@@ -209,7 +211,6 @@ class PLManager(object):
         print('-' * 50)
         print(mb_D)
         print('-' * 50)
-        # return mf_D, mb_D
 
         gam = 50
         r = 0.5
@@ -303,10 +304,11 @@ class RobustDetector(StoDetector.FBAnoDetector):
         # lamb_mf = np.amax((np.array(lamb_mf)))
         # lamb_mb = np.amax((np.array(lamb_mb)))
         alpha = self.desc['alpha']
-        lamb_mf = alpha * np.amin((np.array(lamb_mf))) + (1 - alpha) * np.amax((np.array(lamb_mf))) + 10
+        lamb_mf = alpha * np.amin((np.array(lamb_mf))) + (1 - alpha) * np.amax((np.array(lamb_mf)))
         lamb_mb = alpha * np.amin((np.array(lamb_mb))) + (1 - alpha) * np.amax((np.array(lamb_mb)))
         # lamb_mb = 0.0379389039126
-        print(lamb_mf)
+        # print(lamb_mf)
+        print('The parameter lambda for model-based PL refinement is ')
         print(lamb_mb)
         # assert(1 == 2)
         self.plm = PLManager(ref_file)
@@ -338,8 +340,10 @@ class RobustDetector(StoDetector.FBAnoDetector):
                 raise Exception('unknown ref_scheck operation')
 
             self.PL_enable = self.plm.select(ref_I_rec, lamb_mf, lamb_mb)
-            print(self.PL_enable)
-            if self.PL_enable[0] is None or self.PL_enable[1] is None:
+            # print(self.PL_enable)
+            # print(self.PL_enable[1])
+            # if self.PL_enable[0] is None or self.PL_enable[1] is None:
+            if self.PL_enable[1] is None:
                 raise Exception('lamb is too small, probably you have too '
                         'little candidates')
         StoDetector.FBAnoDetector.detect(self, data_file, ref_file)
@@ -356,7 +360,7 @@ class RobustDetector(StoDetector.FBAnoDetector):
         # self.process_data(self.ref_file, self.rg)
         # self.ref_pool = self.plm.process_data(self.rg, self.PL_selection)
 
-        d_pmf, d_Pmb= em
+        # d_pmf, d_Pmb= em
         self.desc['em'] = em
 
         I_rec = cal_I_rec(self.ref_pool, em, self.PL_enable)
@@ -368,8 +372,8 @@ class RobustDetector(StoDetector.FBAnoDetector):
 
         print('I matrix: \n', I_rec)
         print('min entropy: \n', res)
-        print('model-free model: ', model[0], ' description: ',
-                self.ref_pool.keys()[model[0]])
+        # print('model-free model: ', model[0], ' description: ',
+        #         self.ref_pool.keys()[model[0]])
         print('model-based model: ', model[1], ' description: ',
                 self.ref_pool.keys()[model[1]])
         print('--------------------')
@@ -378,3 +382,32 @@ class RobustDetector(StoDetector.FBAnoDetector):
     def save_addi_info(self, **kwargs):
         super(RobustDetector, self).save_addi_info()
         self.record_data['ref_pool'] = self.ref_pool
+
+    # plot module added by Jing Zhang (jingzbu@gmail.com)
+    def plot(self, far=None, figure_=None,
+            title_='model based',
+            pic_name=None, pic_show=False, csv=None,
+            *args, **kwargs):
+        if not plt: self.save_plot_as_csv()
+
+        rt = self.record_data['winT']
+        rt = [t/3600 for t in rt]
+        mf, mb = zip(*self.record_data['entropy'])
+        # threshold_mf, threshold_mb = zip(*self.record_data['threshold'])
+        _, threshold_mb = zip(*self.record_data['threshold'])
+
+        if csv:
+            save_csv(csv, ['rt', 'mf', 'mb', 'threshold_mb'], rt, mf, mb, threshold_mb)
+
+        if figure_ is None: figure_ = plt.figure()
+        # import ipdb;ipdb.set_trace()
+        plot_points(rt, mb, threshold_mb,
+                figure_ = figure_,
+                xlabel_=self.desc['win_type'], ylabel_= 'entropy',
+                title_ = title_,
+                pic_name=None, pic_show=False,
+                *args, **kwargs)
+        plt.ylabel('divergence')
+        plt.xlabel('time (h)')
+        if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
+        if pic_show: plt.show()
