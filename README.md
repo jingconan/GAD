@@ -17,6 +17,11 @@ Jing Wang and I. Ch. Paschalidis, "***Statistical Traffic Anomaly Detection in T
 Jing Wang and I. Ch. Paschalidis,  "***Robust Anomaly Detection in Dynamic Networks***", Proceedings of the 22nd Mediterranean Conference on Control and Automation
   (MED 14), pages 428-433, June 16--19, 2014, Palermo, Italy. 
 
+Also, recently we have obtained a result accurately approximating the threshold needed by the generalized Hoeffding test (with Markovian assumption corresponding to the model-based method in the package). 
+You are welcome to test the 'mb', 'mfmb', or 'robust' method; any feedback is highly appreciated. The complete theoretical result will come out soon. You are also welcome to test our routine by using the 
+repo [TAHTMA](https://github.com/jingzbu/TAHTMA). By the way, the i.i.d. case has been solved recently by other researchers 
+(cf. [J. Unnikrishnan and D. Huang](http://lcav.epfl.ch/files/content/sites/lcav/files/people/jayakrishnan.unnikrishnan/TIT13submitted.pdf)), and we also provide a repo [TAHTIID](https://github.com/jingzbu/TAHTIID)
+for interested folks to test the performance of their method.  
 
 Installation
 ============
@@ -289,9 +294,9 @@ Personal Webpage: http://people.bu.edu/wangjing/
 
 Collaborator
 =============
-Jing (John) Zhang
+Jing Zhang
 
-Jing Zhang is now a PhD student in Division of Systems Engineering, Boston University 
+Jing Zhang currently is a PhD student in Division of Systems Engineering, Boston University 
 (advised by Professor [Yannis Paschalidis](http://ionia.bu.edu/)). 
 
 EMail: jzh AT bu.edu
@@ -299,4 +304,4 @@ EMail: jzh AT bu.edu
 Personal Webpage: http://people.bu.edu/jzh/
 
 
-*Last update: 10/22/2014 (By Jing Z.)*
+*Last updated on 1/25/2015 (By Jing Z.)*
