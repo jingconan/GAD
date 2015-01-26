@@ -109,13 +109,13 @@ class StoDetector (WindowDetector):
                 help='entropy threshold to determine the anomaly, has \
                 higher priority than hoeff_far')
 
-        parser.add_argument('--ccoef', default=0.0, type=float,
-                help="""correction coefficient for calculat threshold using hoeffding rule.
-                hoeffding threshold is only a asymotical result. An O(n) linear term has been
-                abandon during the analysis, however, it practice, this term is important. You
-                need run on some test data set to deterine an approraite correction coefficient
-                first. Increase ccoef will increase threshold.
-                """)
+        # parser.add_argument('--ccoef', default=0.0, type=float,
+        #         help="""correction coefficient for calculat threshold using hoeffding rule.
+        #         hoeffding threshold is only a asymotical result. An O(n) linear term has been
+        #         abandon during the analysis, however, it practice, this term is important. You
+        #         need run on some test data set to deterine an approraite correction coefficient
+        #         first. Increase ccoef will increase threshold.
+        #         """)
 
 
     def I(self, em1, em2):
