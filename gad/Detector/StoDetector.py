@@ -21,7 +21,7 @@ from .Base import WindowDetector
 ###### added by Jing Zhang (jingzbu@gmail.com)
 import numpy as np
 from numpy import linalg as LA
-from math import sqrt
+from math import sqrt, log
 from scipy.stats import chi2
 from matplotlib.mlab import prctile
 ##############################################
@@ -108,6 +108,10 @@ class StoDetector (WindowDetector):
         parser.add_argument('--entropy_th', default=None, type=float,
                 help='entropy threshold to determine the anomaly, has \
                 higher priority than hoeff_far')
+
+        parser.add_argument('--enable_sanov', default='F', type=str,
+                help="whether or not to use Sanov's theorem to estimate the threshold; \
+                indicated by 'T' or 'F'; default='F'")
 
         # parser.add_argument('--ccoef', default=0.0, type=float,
         #         help="""correction coefficient for calculat threshold using hoeffding rule.
@@ -462,6 +466,9 @@ class StoDetector (WindowDetector):
 
         # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mf':
+            if self.desc['enable_sanov'] == 'T':
+                return -1.0 / n * log(false_alarm_rate)
+
             # for model-free method only
             # the following threshold is suggested in http://arxiv.org/abs/0909.2234
             # QuantLevel_1 = self.desc['fea_option'].get('dist_to_center')
@@ -471,6 +478,9 @@ class StoDetector (WindowDetector):
 
         # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mb':
+            if self.desc['enable_sanov'] == 'T':
+                return -1.0 / n * log(false_alarm_rate)
+
             # for model-based method only
             G = self.G
             H = self.H
@@ -489,6 +499,9 @@ class StoDetector (WindowDetector):
 
         # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mfmb' or self.desc['method'] == 'robust':
+            if self.desc['enable_sanov'] == 'T':
+                return -1.0 / n * log(false_alarm_rate), -1.0 / n * log(false_alarm_rate)
+
             # QuantLevel_1 = self.desc['fea_option'].get('dist_to_center')
             QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
             # print(QuantLevel_2)
