@@ -471,10 +471,10 @@ class StoDetector (WindowDetector):
 
             # for model-free method only
             # the following threshold is suggested in http://arxiv.org/abs/0909.2234
-            # QuantLevel_1 = self.desc['fea_option'].get('dist_to_center')
+            QuantLevel_1 = self.desc['fea_option'].get('flow_size_pkts')[0]
             QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
             # QuantLevel_3 = self.desc['fea_option'].get('cluster')
-            return 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, QuantLevel_2 - 1)
+            return 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, QuantLevel_1 * QuantLevel_2 - 1)
 
         # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mb':
@@ -502,12 +502,12 @@ class StoDetector (WindowDetector):
             if self.desc['enable_sanov'] == 'T':
                 return -1.0 / n * log(false_alarm_rate), -1.0 / n * log(false_alarm_rate)
 
-            # QuantLevel_1 = self.desc['fea_option'].get('dist_to_center')
+            QuantLevel_1 = self.desc['fea_option'].get('flow_size_pkts')[0]
             QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
             # print(QuantLevel_2)
             # assert(1 == 2)
             # QuantLevel_3 = self.desc['fea_option'].get('cluster')
-            eta1 = 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, QuantLevel_2 - 1)
+            eta1 = 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, QuantLevel_1 * QuantLevel_2 - 1)
             G = self.G
             H = self.H
             W = self.W
