@@ -308,8 +308,7 @@ class RobustDetector(StoDetector.FBAnoDetector):
         lamb_mb = alpha * np.amin((np.array(lamb_mb))) + (1 - alpha) * np.amax((np.array(lamb_mb)))
         # lamb_mb = 0.0379389039126
         # print(lamb_mf)
-        print('The parameter lambda for model-based PL refinement is ')
-        print(lamb_mb)
+        print('The parameter lambda for model-based PL refinement is %f'%lamb_mb)
         # assert(1 == 2)
         self.plm = PLManager(ref_file)
 

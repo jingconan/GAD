@@ -17,7 +17,7 @@ DETECTOR_DESC = dict(
         false_alarm_rate = 0.001,
         unified_nominal_pdf = False, # used in sensitivities analysis
         # fea_option = {'flow_size':(4, [0, 10000]), 'flow_size_pkts':(2, [0, 10])},
-        fea_option = {'flow_size':(4, [0, 50000])},
+        fea_option = {'flow_size':(4, [0, 50000]), 'flow_size_pkts':(1, [0, 10])},
         # fea_option = {'flow_size':(2, [0, 10000]), 'flow_size_pkts':(3, [0, 10]),
         #               'cluster': (3, [0, 2])},
         dump_folder = ROOT + 'res/',
