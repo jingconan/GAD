@@ -46,6 +46,10 @@ def cal_I_rec(ref_pool, fb_PL, enable=None):
     """
     d_pmf, d_Pmb = fb_PL
 
+    print('The model-based empirical measure is ')
+    print(d_Pmb)
+    print('-' * 10)
+
     n = len(ref_pool)
     if enable is None:
         enable = [[True] * n for i in [1, 2]]
@@ -61,8 +65,15 @@ def cal_I_rec(ref_pool, fb_PL, enable=None):
         # pmf, Pmb = ref_PL
         _, Pmb = ref_PL
 
+        print("The model-based PL #%d is "%i)
+        print(Pmb)
+
         # I_rec[i, 0] = I1(d_pmf, pmf) if enable[0][i] else float('inf')
         I_rec[i, 1] = I2(d_Pmb, Pmb) if enable[1][i] else float('inf')
+
+        print("The divergence between the model-based empirical measure and the PL #%d is %f"%(i, I_rec[i, 1]))
+        print('-' * 20)
+
     return I_rec
 
 class PLManager(object):

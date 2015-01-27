@@ -341,6 +341,9 @@ class StoDetector (WindowDetector):
         ########### Added by Jing Zhang (jingzbu@gmail.com)
         if  self.desc['method'] == 'mb':
             self.mu = adjust_mat(self.norm_em)
+            print('The model-based PL is ')
+            print(self.mu)
+            print('-' * 30)
             # print(self.mu)
             # mu = np.array(mu)
             mu = self.mu
@@ -372,7 +375,9 @@ class StoDetector (WindowDetector):
         if  self.desc['method'] == 'mfmb' or self.desc['method'] == 'robust':
             pmf, Pmb = self.norm_em
             self.mu = adjust_mat(Pmb)
-            # print(self.mu)
+            print('The model-based PL (as a whole) is ')
+            print(self.mu)
+            print('-' * 30)
             # mu = np.array(mu)
             mu = self.mu
             N, _ = mu.shape
