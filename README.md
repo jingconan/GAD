@@ -135,7 +135,8 @@ detect the data directly and plot the result.
 Examples:
 
     $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show
-    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mf --pic_show --enable_sanov T
+    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show --enable_sanov
+    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mf --pic_show --enable_sanov
     $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow_ref.txt -m robust -r='dump test-data/sc.pk'
     $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='load test-data/sc.pk' --pic_show
 

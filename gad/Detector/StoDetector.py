@@ -109,9 +109,8 @@ class StoDetector (WindowDetector):
                 help='entropy threshold to determine the anomaly, has \
                 higher priority than hoeff_far')
 
-        parser.add_argument('--enable_sanov', default='F', type=str,
-                help="whether or not to use Sanov's theorem to estimate the threshold; \
-                indicated by 'T' or 'F'; default='F'")
+        parser.add_argument('--enable_sanov', default=False, action='store_true',
+                help="whether or not to use Sanov's theorem to estimate the threshold")
 
         # parser.add_argument('--ccoef', default=0.0, type=float,
         #         help="""correction coefficient for calculat threshold using hoeffding rule.
@@ -466,7 +465,7 @@ class StoDetector (WindowDetector):
 
         # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mf':
-            if self.desc['enable_sanov'] == 'T':
+            if self.desc['enable_sanov']:
                 return -1.0 / n * log(false_alarm_rate)
 
             # for model-free method only
@@ -478,7 +477,7 @@ class StoDetector (WindowDetector):
 
         # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mb':
-            if self.desc['enable_sanov'] == 'T':
+            if self.desc['enable_sanov']:
                 return -1.0 / n * log(false_alarm_rate)
 
             # for model-based method only
@@ -499,7 +498,7 @@ class StoDetector (WindowDetector):
 
         # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mfmb' or self.desc['method'] == 'robust':
-            if self.desc['enable_sanov'] == 'T':
+            if self.desc['enable_sanov']:
                 return -1.0 / n * log(false_alarm_rate), -1.0 / n * log(false_alarm_rate)
 
             QuantLevel_1 = self.desc['fea_option'].get('flow_size_pkts')[0]
