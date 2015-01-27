@@ -23,6 +23,9 @@ repo [TAHTMA](https://github.com/jingzbu/TAHTMA). By the way, the i.i.d. case ha
 (cf. [J. Unnikrishnan and D. Huang](http://lcav.epfl.ch/files/content/sites/lcav/files/people/jayakrishnan.unnikrishnan/TIT13submitted.pdf)), and we also provide a repo [TAHTIID](https://github.com/jingzbu/TAHTIID)
 for interested readers to test the performance of their method.  
 
+Especially, you are welcome to visit the page [log-normal-sample](https://www.dropbox.com/sh/ce12g4epj5qf250/AABLoBx8KfQJvijQz_R2kEAea?dl=0) to test 'robust' method with our threshold approximation. If you have
+any question, please feel free to contact us.
+
 Installation
 ============
 
