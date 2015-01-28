@@ -253,9 +253,9 @@ class RobustDetector(StoDetector.FBAnoDetector):
                 help="""weight of minimum threshold determining the up-bound of nominal cross-entropy;
                 should be within (0, 1), default=0.5""")
 
-        # parser.add_argument('--lamb', default=None, type=float,
-        #         help="""upbound for nominal cross entropy, if lamb=0, disable
-        #         Probability Law Identification""")
+        parser.add_argument('--lamb', default=0, type=float,
+                help="""manual up-bound for nominal cross entropy; only when lamb>0, use its value;
+                has higher priority than alpha""")
 
         parser.add_argument('--ref_data', default=None, type=str,
                 help="""name for reference file""")
@@ -317,6 +317,8 @@ class RobustDetector(StoDetector.FBAnoDetector):
         alpha = self.desc['alpha']
         lamb_mf = alpha * np.amin((np.array(lamb_mf))) + (1 - alpha) * np.amax((np.array(lamb_mf)))
         lamb_mb = alpha * np.amin((np.array(lamb_mb))) + (1 - alpha) * np.amax((np.array(lamb_mb)))
+        if self.desc['lamb'] > 0:
+            lamb_mb = self.desc['lamb']
         # lamb_mb = 0.0379389039126
         # print(lamb_mf)
         print('The parameter lambda for model-based PL refinement is %f'%lamb_mb)
