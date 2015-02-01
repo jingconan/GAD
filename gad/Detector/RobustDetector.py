@@ -419,6 +419,7 @@ class RobustDetector(StoDetector.FBAnoDetector):
                 title_ = title_,
                 pic_name=None, pic_show=False,
                 *args, **kwargs)
+        # plt.xlim([0, 24 * 7])
         plt.ylabel('divergence')
         plt.xlabel('time (h)')
         if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
