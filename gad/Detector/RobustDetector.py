@@ -397,7 +397,7 @@ class RobustDetector(StoDetector.FBAnoDetector):
 
     # plot module added by Jing Zhang (jingzbu@gmail.com)
     def plot(self, far=None, figure_=None,
-            title_='model based',
+            # title_='model based',
             pic_name=None, pic_show=False, csv=None,
             *args, **kwargs):
         if not plt: self.save_plot_as_csv()
@@ -407,6 +407,8 @@ class RobustDetector(StoDetector.FBAnoDetector):
         mf, mb = zip(*self.record_data['entropy'])
         # threshold_mf, threshold_mb = zip(*self.record_data['threshold'])
         _, threshold_mb = zip(*self.record_data['threshold'])
+        alpha = self.desc['alpha']
+        threshold_mb = np.multiply(threshold_mb, (1 + 2 * abs(alpha)))
 
         if csv:
             save_csv(csv, ['rt', 'mf', 'mb', 'threshold_mb'], rt, mf, mb, threshold_mb)
@@ -416,10 +418,10 @@ class RobustDetector(StoDetector.FBAnoDetector):
         plot_points(rt, mb, threshold_mb,
                 figure_ = figure_,
                 xlabel_=self.desc['win_type'], ylabel_= 'entropy',
-                title_ = title_,
+                # title_ = title_,
                 pic_name=None, pic_show=False,
                 *args, **kwargs)
-        # plt.xlim([0, 24 * 7])
+        plt.xlim([0, 24 * 7])
         plt.ylabel('divergence')
         plt.xlabel('time (h)')
         if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
