@@ -1,4 +1,5 @@
 ROOT = ''
+VERSION = 0
 
 #################################
 ##   Parameters For Detector  ###

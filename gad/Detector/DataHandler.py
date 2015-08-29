@@ -32,6 +32,15 @@ class DataHandler(object):
         case"""
         abstract_method()
 
+    def get_fea_slice(self, rg=None, rg_type=None):
+        """Get feature slice within a range"""
+        abstract_method()
+
+    def get_fea_list(self):
+        """Get feature list"""
+        abstract_method()
+
+
 from socket import inet_ntoa
 from struct import pack
 def long_to_dotted(ip):
@@ -45,11 +54,51 @@ class QuantizeDataHandler(DataHandler):
     def __init__(self, data, desc):
         super(QuantizeDataHandler, self).__init__(data, desc)
         self._init_data(data)
+        if desc.get('VERSION', 0) == 0:
+            self._parse_desc_v0(desc)
+        else:
+            self._parse_desc_v1(desc)
+
+    def _parse_desc_v0(self, desc):
         fea_option = desc['fea_option']
         self.fea_option  = fea_option
-        self.direct_fea_list = fea_option.keys()
+        self.fea_list = fea_option.keys()
         self.fea_QN, self.global_fea_range = zip(*fea_option.values())
         self.global_fea_range = np.array(self.global_fea_range, dtype=np.float)
+
+    def _parse_desc_v1(self, desc):
+        self.fea_option = desc['fea_option']
+        fea_num = len(self.fea_option)
+        self.fea_list = []
+        self.fea_QN = np.zeros((fea_num,))
+        self.global_fea_range = np.zeros((fea_num, 2))
+        self.cater_feature_option = []
+
+        for idx, option in enumerate(self.fea_option):
+            self.fea_list.append(option['feature_name'])
+            if option['feature_type'] == 'categorical':
+                symbol_index = option['symbol_index']
+                min_index = min(symbol_index.values())
+                max_index = max(symbol_index.values())
+                self.fea_QN[idx] = max_index - min_index + 1
+                self.global_fea_range[idx, 0] = min_index
+                self.global_fea_range[idx, 1] = max_index
+
+                self.cater_feature_option.append({
+                    'feature_index': idx,
+                    'symbol_index': symbol_index,
+                })
+            elif option['feature_type'] == 'numerical': # numerical
+                self.fea_QN[idx] = option['quantized_number']
+                self.global_fea_range[idx, 0] = option['range'][0]
+                self.global_fea_range[idx, 1] = option['range'][1]
+            else:
+                raise Exception('unknown feature_type')
+
+        self.global_fea_range = np.array(self.global_fea_range)
+
+    def get_quantized_levels(self):
+        return self.fea_QN
 
     def _init_data(self, data):
         self.data = data
@@ -60,16 +109,44 @@ class QuantizeDataHandler(DataHandler):
     def get_fea_list(self):
         return self.fea_list
 
+    def _map_categorical_feature(self, raw_data, feature_option):
+        mapped_data = []
+        for fea_vec in raw_data:
+            for option in feature_option:
+                index = option['feature_index']
+                symbol_index = option['symbol_index']
+                mapped_val = symbol_index.get(fea_vec[index], None)
+                if mapped_val is None:
+                    mapped_val = symbol_index.get('DEFAULT', None)
+                    print('[warning] default value is used for symbol: ' +
+                          fea_vec[index])
+                if mapped_val is None:
+                    raise Exception('[error] cannot find symbol %s in '
+                                    'symbol_index of detector config! Pls '
+                                    'verify your config file.'
+                                    % (fea_vec[index]))
+
+                fea_vec[index] = mapped_val
+            mapped_data.append(fea_vec)
+        return mapped_data
+
     def get_fea_slice(self, rg=None, rg_type=None):
-        direct_fea_vec = self.data.get_rows(self.direct_fea_list, rg, rg_type)
-        if direct_fea_vec is None or len(direct_fea_vec) == 0:
+        data = self.data.get_rows(self.get_fea_list(), rg, rg_type)
+
+        if self.desc.get('VERSION', 0) >= 1:
+            data = self._map_categorical_feature(data,
+                                                 self.cater_feature_option)
+
+        if not isinstance(data, (np.ndarray, np.generic) ):
+            data = np.array(data, dtype=float)
+
+        if data is None or len(data) == 0:
             raise FetchNoDataException("Didn't find any data in this range")
-        return direct_fea_vec
+        return data
 
     def quantize_fea(self, rg=None, rg_type=None):
         """get quantized features for part of the flows"""
         fea_vec = self.get_fea_slice(rg, rg_type)
-        fea_vec = np.array(fea_vec.tolist())
         fr = self.global_fea_range
         quan_len = (fr[:, 1] - fr[:, 0]) / self.fea_QN
         min_val = np.outer(np.ones(fea_vec.shape[0],), fr[:, 0])

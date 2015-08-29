@@ -406,7 +406,9 @@ class StoDetector (WindowDetector):
         win_size = self.desc['win_size']
         interval = self.desc['interval']
 
-        time = self.desc['fr_win_size'] if ('flow_rate' in self.desc['fea_option'].keys()) else 0
+        time = 0
+        if 'flow_rate' in self.data_file.get_fea_list():
+            time = self.desc['fr_win_size']
 
         i = 0
         while True:
@@ -469,9 +471,7 @@ class StoDetector (WindowDetector):
 
         # total number of quantized symbols, i.e., multiplication of quantized
         # level in all dimensions.
-        quant_space_size = 1
-        for fea, option in self.desc['fea_option'].iteritems():
-            quant_space_size *= option[0]
+        quant_space_size = np.prod(self.data_file.get_quantized_levels())
 
         # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mf':
@@ -763,8 +763,8 @@ class ModelFreeAnoDetector(StoDetector):
     def I(self, em, norm_em):
         return I1(em, norm_em)
 
-    # plot module added by Jing Zhang (jingzbu@gmail.com) 
-    def plot(self, far=None, figure_=None, 
+    # plot module added by Jing Zhang (jingzbu@gmail.com)
+    def plot(self, far=None, figure_=None,
             title_='model free',
             pic_name=None, pic_show=False, csv=None,
             *args, **kwargs):
@@ -794,7 +794,7 @@ class ModelBaseAnoDetector(StoDetector):
     def I(self, em, norm_em):
         return I2(em, norm_em)
 
-    # plot module added by Jing Zhang (jingzbu@gmail.com) 
+    # plot module added by Jing Zhang (jingzbu@gmail.com)
     def plot(self, far=None, figure_=None,
             title_='model based',
             pic_name=None, pic_show=False, csv=None,
