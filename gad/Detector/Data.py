@@ -74,7 +74,32 @@ class Data(object):
 
 import pyximport; pyximport.install()
 from ..util import np
-from ..CythonUtil import IP, parse_records, c_parse_records_fs
+try:
+    from ..CythonUtil import c_parse_records_fs
+except:
+    print('[warning] Cannot compile Cython code to parse recods, use the slow'
+          ' verison.')
+    c_parse_records_fs = None
+
+def IP(x):
+    return tuple(int(v) for v in x.rsplit('.'))
+
+import re
+def parse_records(f_name, FORMAT, regular_expression):
+    flow = []
+    with open(f_name, 'r') as fid:
+        while True:
+            line = fid.readline()
+            if not line:
+                break
+            if line == '\n': # Ignore Blank Line
+                continue
+            line = line.strip()
+            item = re.split(regular_expression, line)
+            f = tuple(h(item[pos]) for k, pos, h in FORMAT)
+            flow.append(f)
+    return flow
+
 # IP = lambda x:tuple(int(v) for v in x.rsplit('.'))
 class MEM_DiskFile(Data):
     """ abstract base class for hard disk file The flow file into MEMory as a

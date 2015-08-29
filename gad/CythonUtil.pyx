@@ -1,23 +1,3 @@
-def IP(x):
-    return tuple(int(v) for v in x.rsplit('.'))
-
-import re
-def parse_records(f_name, FORMAT, regular_expression):
-    flow = []
-    with open(f_name, 'r') as fid:
-        while True:
-            line = fid.readline()
-            if not line:
-                break
-            if line == '\n': # Ignore Blank Line
-                continue
-            line = line.strip()
-            item = re.split(regular_expression, line)
-            f = tuple(h(item[pos]) for k, pos, h in FORMAT)
-            flow.append(f)
-    return flow
-
-
 from libc.stdio cimport *
 import numpy as np
 cimport numpy as np
