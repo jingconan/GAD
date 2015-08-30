@@ -47,13 +47,26 @@ DETECTOR_DESC = {
                 'DEFAULT': 0
             },
         },
-
-
+        {
+            'feature_name': 'SrcAddr',
+            'feature_type': 'ipv4_address',
+            'quantized_number': 10,
+            'range': [0, 4294967296],
+            'ipv6_map_to_value': 0,
+        },
+        {
+            'feature_name': 'DstAddr',
+            'feature_type': 'ipv4_address',
+            'quantized_number': 10,
+            'range': [0, 4294967296],
+            'ipv6_map_to_value': 0,
+        },
     ],
     'ano_ana_data_file': ANO_ANA_DATA_FILE,
     'normal_rg': None,
+    'detect_rg': [2000, 3000],
     'detector_type': 'mfmb',
-    'max_detect_num': 3000,
+    'max_detect_num': 1000,
     'pic_show': True,
     'pic_name': './res.eps',
     'export_flows': None,
