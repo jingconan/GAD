@@ -54,7 +54,7 @@ class QuantizeDataHandler(DataHandler):
     def __init__(self, data, desc):
         super(QuantizeDataHandler, self).__init__(data, desc)
         self._init_data(data)
-        if desc.get('VERSION', 0) == 0:
+        if desc.get('version', 0) == 0:
             self._parse_desc_v0(desc)
         else:
             self._parse_desc_v1(desc)
@@ -133,7 +133,7 @@ class QuantizeDataHandler(DataHandler):
     def get_fea_slice(self, rg=None, rg_type=None):
         data = self.data.get_rows(self.get_fea_list(), rg, rg_type)
 
-        if self.desc.get('VERSION', 0) >= 1:
+        if self.desc.get('version', 0) >= 1:
             data = self._map_categorical_feature(data,
                                                  self.cater_feature_option)
 

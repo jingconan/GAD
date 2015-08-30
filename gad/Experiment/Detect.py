@@ -15,7 +15,6 @@ class Detect(BaseExper):
         # BaseExper.__init__(self, argv, parser)
 
         self.desc = copy.deepcopy(self.args.config['DETECTOR_DESC'])
-        self.desc['VERSION'] = self.args.config['VERSION']
         update_not_none(self.desc, self.args.__dict__)
 
         # if self.args.help :
