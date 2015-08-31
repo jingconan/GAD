@@ -88,7 +88,7 @@ class QuantizeDataHandler(DataHandler):
                     'feature_index': idx,
                     'symbol_index': symbol_index,
                 })
-            elif option['feature_type'] == 'numerical': # numerical
+            elif option['feature_type'] in ['numerical', 'ipv4_address']:
                 self.fea_QN[idx] = option['quantized_number']
                 self.global_fea_range[idx, 0] = option['range'][0]
                 self.global_fea_range[idx, 1] = option['range'][1]
@@ -109,33 +109,46 @@ class QuantizeDataHandler(DataHandler):
     def get_fea_list(self):
         return self.fea_list
 
-    def _map_categorical_feature(self, raw_data, feature_option):
-        mapped_data = []
-        for fea_vec in raw_data:
-            for option in feature_option:
-                index = option['feature_index']
-                symbol_index = option['symbol_index']
-                mapped_val = symbol_index.get(fea_vec[index], None)
-                if mapped_val is None:
-                    mapped_val = symbol_index.get('DEFAULT', None)
-                    print('[warning] default value is used for symbol: ' +
-                          fea_vec[index])
-                if mapped_val is None:
-                    raise Exception('[error] cannot find symbol %s in '
-                                    'symbol_index of detector config! Pls '
-                                    'verify your config file.'
-                                    % (fea_vec[index]))
 
-                fea_vec[index] = mapped_val
-            mapped_data.append(fea_vec)
-        return mapped_data
+    def _process_feature(self, row, fea_option):
+        fea_dim = len(row)
+        for i in xrange(fea_dim):
+            option = fea_option[i]
+            if option['feature_type'] == 'numerical':
+                continue
+            processor = getattr(self, '_process_feature_' + option['feature_type'])
+            row[i] = processor(row[i], option)
+        return row
+
+    @staticmethod
+    def _process_feature_categorical(input, option):
+        symbol_index = option['symbol_index']
+        mapped_val = symbol_index.get(input)
+        if mapped_val is None:
+            mapped_val = symbol_index.get('DEFAULT', None)
+            print('[warning] default value is used for symbol: ' +
+                  input)
+        if mapped_val is None:
+            raise Exception('[error] cannot find symbol %s in '
+                            'symbol_index of detector config! Pls '
+                            'verify your config file.'
+                            % (input))
+        return mapped_val
+
+    @staticmethod
+    def _process_feature_ipv4_address(input, option):
+        tokens = input.split('.')
+        if tokens != 4:
+            return option['ipv6_map_to_value']
+        return np.dot([int(v) for v in tokens], [16777216, 65536, 256, 1])
+
 
     def get_fea_slice(self, rg=None, rg_type=None):
         data = self.data.get_rows(self.get_fea_list(), rg, rg_type)
 
         if self.desc.get('version', 0) >= 1:
-            data = self._map_categorical_feature(data,
-                                                 self.cater_feature_option)
+            data = [self._process_feature(row, self.fea_option)
+                    for row in data]
 
         if not isinstance(data, (np.ndarray, np.generic) ):
             data = np.array(data, dtype=float)

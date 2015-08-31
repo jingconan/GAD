@@ -14,35 +14,24 @@ from .Detect import Detect
 
 class Eval(Detect):
     """plot ROC curve for the hypothesis test"""
-
-    #  def init_parser(self, parser):
-    #      super(Eval, self).init_parser(parser)
-
-        #  parser.add_argument('--res_folder', default=None,
-        #                      help='result folder')
-
-        #  parser.add_argument('--plot', default=False, action='store_true',
-        #                      help='plot the result or not')
-
-    def _get_botnet_flow_num_all_win(self):
+    def get_ground_truth(self):
         record_data = self.detector.record_data
         data_handler = self.detector.data_file
         win_size = self.desc['win_size']
-        botnet_flow_num = []
-        for time in record_data['winT']:
+        win_num = len(record_data['winT'])
+        botnet_flow_num = np.zeros((win_num,), dtype=float)
+        flow_num = np.zeros((win_num,), dtype=float)
+        for i, time in enumerate(record_data['winT']):
             win_data = data_handler.data.get_rows('Label',
                                                   rg=[time, time + win_size],
                                                   rg_type='time')
-            num = sum([1 if 'Botnet' in row else 0
-                       for row in win_data])
-            botnet_flow_num.append(num)
+            botnet_flow_num[i] = sum([1 if 'Botnet' in row else 0 for row in
+                                        win_data])
+            flow_num[i] = len(win_data)
 
-        self.detector.record_data['botnet_flow_num'] = botnet_flow_num
-        return botnet_flow_num
-
-    def get_ground_truth(self):
-        botnet_flow_num = self._get_botnet_flow_num_all_win()
-        return np.array([num > 0 for num in botnet_flow_num], dtype=bool)
+        #  self.detector.record_data['botnet_flow_num'] = botnet_flow_num
+        botnet_flow_ratio = botnet_flow_num / flow_num
+        return botnet_flow_ratio > 0.01
 
     def eval(self, thresholds):
         ground_truth = self.get_ground_truth()
@@ -63,8 +52,13 @@ class Eval(Detect):
             res[i, 0] = fpr
             res[i, 1] = tpr
 
+        plt.subplot(211)
         plt.plot(res[:, 0], res[:, 1])
+        ground_truth = self.get_ground_truth()
+        plt.subplot(212)
+        plt.plot(ground_truth)
         plt.show()
+
         import ipdb;ipdb.set_trace()
 
 

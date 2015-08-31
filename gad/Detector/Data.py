@@ -206,11 +206,18 @@ class MEM_DiskFile(Data):
 class CSVFile(MEM_DiskFile):
     def _init(self):
         import pandas
-        self.table = pandas.io.parsers.read_csv(self.f_name)
-        self.row_num = self.table.shape[0]
-        self.t = self.table.get('time')
-        if self.t is None:
+        if self.desc['win_type'] == 'time':
+            time_index_feature_name = self.desc.get('time_index_feature_name',
+                                                    'time')
+            self.table = pandas.io.parsers.read_csv(self.f_name,
+                                                    parse_dates=[time_index_feature_name])
+            self.row_num = self.table.shape[0]
+            self.t = np.array(self.table.get(time_index_feature_name), dtype=float)
+            self.t /= 1e9
+        else:
+            self.table = pandas.io.parsers.read_csv(self.f_name)
             self.t = range(self.row_num)
+
         self.min_time = min(self.t)
         self.max_time = max(self.t)
 

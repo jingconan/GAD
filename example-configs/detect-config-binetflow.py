@@ -1,5 +1,7 @@
+from datetime import datetime
+
 ROOT = ''
-# VERSION is used to indicate the config versio. In version 1, fea_option is
+# VERSION is used to indicate the config version. In version 1, fea_option is
 # no longer a dict but a array of dict.
 VERSION = 1
 
@@ -15,18 +17,25 @@ DETECTOR_DESC = {
     'win_type': 'time', # 'time'|'flow'
     'fr_win_size': 100, # window size for estimation of flow rate
     'false_alarm_rate': 0.001,
+    'time_index_feature_name': 'StartTime',
     'fea_option': [
         {
             'feature_name': 'TotBytes',
             'feature_type': 'numerical',
             'quantized_number': 4,
-            'range': [0, 50000],
+            'range': [0, 608224604],
         },
         {
             'feature_name': 'SrcBytes',
             'feature_type': 'numerical',
             'quantized_number': 4,
-            'range': [0, 50000],
+            'range': [0, 251771542],
+        },
+        {
+            'feature_name': 'Dur',
+            'feature_type': 'numerical',
+            'quantized_number': 10,
+            'range': [0, 3600],
         },
         {
             'feature_name': 'Proto',
@@ -64,7 +73,7 @@ DETECTOR_DESC = {
     ],
     'ano_ana_data_file': ANO_ANA_DATA_FILE,
     'normal_rg': None,
-    'detect_rg': [2000, 3000],
+    'detect_rg': [1000, 2000],
     'detector_type': 'mfmb',
     'max_detect_num': 1000,
     'pic_show': True,
