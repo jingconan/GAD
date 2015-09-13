@@ -7,6 +7,7 @@ from __future__ import print_function, division, absolute_import
 import copy, os
 import collections
 from ..Detector import MEM_FS
+from ..Detector import BotDetector
 from ..util import update_not_none, plt, np, DataRecorder
 from ..util import zdump, zload, Load, get_detect_metric
 import itertools
@@ -99,11 +100,13 @@ class BotnetDetectionEval(Detect):
         divs = self.detector.record_data['entropy']
         divs = np.array(divs, dtype=float) / np.max(divs)
 
+        bot_detector = BotDetector.SoBotDet()
+
         data_recorder = DataRecorder()
         res = np.zeros((len(thresholds), 2))
         for i, threshold in enumerate(thresholds):
             det_res = divs > threshold
-            detected_ips = self.get_detected_ips(label_info, det_res)
+            detected_ips = bot_detector.detect(no_anomaly_detect=True)
             tp, fn, tn, fp, sensitivity, specificity = \
                 get_detect_metric(ground_truth_bot_ips, detected_ips, all_ips)
             tpr = tp * 1.0 / (tp + fn) if (tp + fn) > 0 else float('nan')
