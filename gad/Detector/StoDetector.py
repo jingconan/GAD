@@ -443,7 +443,7 @@ class StoDetector (WindowDetector):
             try:
                 self.rg = [time, time+win_size] # For two window method
                 for window_info in detect_window_info:
-                    processor = getattr(self, 
+                    processor = getattr(self,
                                         '_detect_window_info_' + window_info)
                     processor(self.rg, rg_type)
 
@@ -669,7 +669,8 @@ class StoDetector (WindowDetector):
         self.plot(*args, **kwargs)
 
     @staticmethod
-    def find_abnormal_windows(entropy, entropy_threshold=None, ab_win_portion=None, ab_win_num=None):
+    def find_abnormal_windows(entropy, entropy_threshold=None,
+                              ab_win_portion=None, ab_win_num=None):
         """ find abnormal windows out of all windows
 
         Parameters:
@@ -684,11 +685,14 @@ class StoDetector (WindowDetector):
         Notes
         -----------
         find abnormal windows. There are three standards to select abnormal windows:
-            1. when the entropy >= entropy_threshold. when entropy_threshold is a list. the length of entropy_threshold should
-                equals the length of entropy. The element in this list is the entropy threshold for window with corresponding position.
-            2. when it is winthin the top *portion* of entropy, 0 <= *portion* <= 1
-            3. when it is the top *sel_num* of entropy
-        the priority of 1 > 2 > 3.
+            1. when the entropy >= entropy_threshold. when entropy_threshold
+            is a list. the length of entropy_threshold should equals the
+            length of entropy. The element in this list is the entropy
+            threshold for window with corresponding position.
+            2. when it is winthin the top *portion* of entropy, 0 <= *portion*
+            <= 1
+            3. when it is the top *sel_num* of entropy.
+            the priority of 1 > 2 > 3.
         """
         num = len(entropy)
         if not entropy_threshold:
@@ -703,7 +707,8 @@ class StoDetector (WindowDetector):
             return [ i for i in xrange(num) if entropy[i] >= entropy_threshold ]
 
     def export_ab_flow_entropy(self, entropy, fname,
-            entropy_threshold=None, ab_win_portion=None, ab_win_num=None):
+                               entropy_threshold=None, ab_win_portion=None,
+                               ab_win_num=None):
         """export abnormal flows based on entropy
 
         Parameters
@@ -732,7 +737,8 @@ class StoDetector (WindowDetector):
 
         """
 
-        ab_idx = self.find_abnormal_windows(entropy, entropy_threshold, ab_win_portion, ab_win_num)
+        ab_idx = self.find_abnormal_windows(entropy, entropy_threshold,
+                                            ab_win_portion, ab_win_num)
 
         fid = open(fname, 'w')
         rg_type = self.desc['win_type']
@@ -747,11 +753,13 @@ class StoDetector (WindowDetector):
             # data, _ = self.data_file.get_fea_slice([st, st+win_size], rg_type)
             data = self.data_file.get_fea_slice([st, st+win_size], rg_type)
             sp, ep = self.data_file.data._get_where([st, st+win_size], rg_type) #FIXME
-            fid.write('Seq # [%i] for abnormal window: [%i], entropy: [%f], start time [%f]\n'%(seq, idx, entropy[idx], st))
+            fid.write(('Seq # [%i] for abnormal window: [%i], entropy: [%f], '
+                       'start time [%f]\n') % (seq, idx, entropy[idx], st))
             i = sp-1
             for l in data:
                 i += 1
-                data_str = '\t'.join( ['%s - %f'%tuple(v) for v in zip(self.data_file.get_fea_list(), l)] )
+                data_str = '\t'.join( ['%s - %f'%tuple(v)
+                                       for v in zip(self.data_file.get_fea_list(), l)] )
                 fid.write('Sample # %i\t%s\n'%(i, data_str))
 
         fid.close()
