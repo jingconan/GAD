@@ -205,6 +205,7 @@ class CSVFile(MEM_DiskFile):
             self.t /= 1e9
         else:
             self.table = pandas.io.parsers.read_csv(self.f_name)
+            self.row_num = self.table.shape[0]
             self.t = range(self.row_num)
 
         self.min_time = min(self.t)
