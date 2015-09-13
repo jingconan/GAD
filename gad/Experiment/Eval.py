@@ -7,7 +7,7 @@ from __future__ import print_function, division, absolute_import
 import copy, os
 from ..Detector import MEM_FS
 from ..util import update_not_none, plt
-from ..util import zdump, zload
+from ..util import zdump, zload, get_detect_metric
 import itertools
 
 from .Detect import Detect
@@ -21,30 +21,6 @@ def roc(data):
     print('tpr, ', tpr)
     return fpr, tpr
 
-def get_quantitative(A, B, W):
-    """**A** is the referece, and **B** is the detected result, **W** is the whole set
-    calculate the true positive, false negative, true negative and false positive
-    """
-    A = set(A)
-    B = set(B)
-    W = set(W)
-    # no of true positive, no of elements that belongs to B and also belongs to A
-    tp = len(set.intersection(A, B))
-
-    # no of false negative no of elements that belongs to A but doesn't belong to B
-    fn = len(A - B)
-
-    # no of true negative, no of element that not belongs to A and not belong to B
-    tn = len(W - set.union(A, B))
-    # no of false positive, no of element that not belongs to A but belongs to B
-    fp = len(B - A)
-
-    # sensitivity is the probability of a alarm given that the this flow is anormalous
-    sensitivity = tp * 1.0 / (tp + fn)
-    # specificity is the probability of there isn't alarm given that the flow is normal
-    specificity = tn * 1.0 / (tn + fp)
-
-    return tp, fn, tn, fp, sensitivity, specificity
 
 #############################################################################
 ##         Visualization Part                                           #####
@@ -368,9 +344,8 @@ sensitivity: %f\tspecificity: %f
         print('abnormal window indices are: ',
                 self.detector.ab_win_idx)
 
-        return get_quantitative(self.real_ab_flow_seq,
-                self.ab_seq,
-                range(self.normal_flow.row_num))
+        return get_detect_metric(self.real_ab_flow_seq, self.ab_seq,
+                                 range(self.normal_flow.row_num))
                 # range(len(self.normal_flow)))
 
     def run(self):

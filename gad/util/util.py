@@ -350,6 +350,50 @@ def zload(f_name):
     f.close()
     return obj
 
+import collections
+
+class DataRecorder(object):
+    def __init__(self):
+        self._records = collections.defaultdict(list)
+        pass
+
+    def add(self, **kwargs):
+        for k, v in kwargs.iteritems():
+            self._records[k].append(v)
+
+    def reset(self):
+        self._records = collections.defaultdict(list)
+
+    def to_pandas_dataframe(self):
+        import pandas
+        return pandas.DataFrame(self._records)
+
+def get_detect_metric(A, B, W):
+    """**A** is the referece, and **B** is the detected result, **W** is the whole set
+    calculate the true positive, false negative, true negative and false positive
+    """
+    A = set(A)
+    B = set(B)
+    W = set(W)
+    # no of true positive, no of elements that belongs to B and also belongs to A
+    tp = len(set.intersection(A, B))
+
+    # no of false negative no of elements that belongs to A but doesn't belong to B
+    fn = len(A - B)
+
+    # no of true negative, no of element that not belongs to A and not belong to B
+    tn = len(W - set.union(A, B))
+    # no of false positive, no of element that not belongs to A but belongs to B
+    fp = len(B - A)
+
+    # sensitivity is the probability of a alarm given that the this flow is anormalous
+    sensitivity = tp * 1.0 / (tp + fn) if (tp + fn) > 0 else float('nan')
+    # specificity is the probability of there isn't alarm given that the flow is normal
+    specificity = tn * 1.0 / (tn + fp) if (tn + fp) > 0 else float('nan')
+
+    return tp, fn, tn, fp, sensitivity, specificity
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

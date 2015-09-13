@@ -4,9 +4,8 @@
         2. MySQL database. The base class is the :class:`MySQLDatabase`.
 """
 from __future__ import print_function, division, absolute_import
-from .ClusterAlg import KMedians
-from ..util import abstract_method, DF, np
 from ..util import Find, DataEndException
+from ..util import abstract_method, DF, np
 import numpy
 from numpy.lib import recfunctions
 
@@ -70,16 +69,6 @@ class Data(object):
         """
         abstract_method()
 
-
-
-import pyximport; pyximport.install()
-from ..util import np
-try:
-    from ..CythonUtil import c_parse_records_fs
-except:
-    print('[warning] Cannot compile Cython code to parse recods, use the slow'
-          ' verison.')
-    c_parse_records_fs = None
 
 def IP(x):
     return tuple(int(v) for v in x.rsplit('.'))
@@ -243,6 +232,7 @@ class MEM_IPFile(MEM_DiskFile):
                                    [cluster, dist_to_center])
 
     def _cluster_src_ip(self, cluster_num, unique_ip):
+        from ..util.ClusterAlg import KMedians
         # unique_src_cluster, center_pt = KMeans(unique_src_IP_vec_set, cluster_num, DF)
         unique_src_cluster, center_pt = KMedians(unique_ip, cluster_num, DF)
         cluster_map = dict(zip(unique_ip, unique_src_cluster))
@@ -290,16 +280,6 @@ class MEM_FS(MEM_IPFile):
         ('flow_size_pkts', np.float64, 1),
         ])
 
-    #FIXME the c_parse_records_fs will fail if the timestamp is very huge
-    # def parse(self):
-    #     try: # try optimized parse method written in cython first
-    #         self.table, self.row_num = c_parse_records_fs(self.f_name)
-    #     except Exception as e:
-    #         print('-' * 30)
-    #         print(e)
-    #         print('Please increase the MAXROW in CythonUtil.pyx')
-    #         print('-' * 30)
-    #         super(MEM_FS, self).parse()
 
 import datetime
 import time
@@ -388,8 +368,9 @@ class MEM_FlowExporter(MEM_DiskFile):
 
 def parse_complex_records(fileName, FORMAT, regular_expression):
     """
-    the input is the filename of the flow file that needs to be parsed.
-    the ouput is list of dictionary contains the information for each flow in the data. all these information are strings, users need
+    the input is the filename of the flow file that needs to be parsed.  the
+    ouput is list of dictionary contains the information for each flow in the
+    data. all these information are strings, users need
     to tranform them by themselves
     """
     flow = []

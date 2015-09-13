@@ -54,7 +54,7 @@ class Detect(BaseExper):
                 help="""print the detailed help message for a method. Avaliable method [%s]"""
                 %(' | '.join(detector_map.keys())))
 
-        parser.add_argument('--data_type', default='fs',
+        parser.add_argument('--data_type', default=None,
                 help="""--specify the type of the data you use, the availiable
                 option are: [%s] """ %(' | '.join(get_help_docs(data_map)))
                 )
