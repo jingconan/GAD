@@ -10,7 +10,7 @@ from . import StoDetector
 from . import Data
 from . import DataHandler
 
-class TestTrafficCorrelationAnalyzer(unittest.TestCase):
+class TestSoBotDet(unittest.TestCase):
     def setUp(self):
         raw_data = pandas.DataFrame({
             'StartTime': ['2011/08/16 10:01:46.000000',
