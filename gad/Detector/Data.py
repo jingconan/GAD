@@ -147,17 +147,16 @@ class MEM_DiskFile(Data):
             return 0, self.row_num
         if rg_type == 'flow':
             sp, ep = rg
-            if sp >= self.row_num: raise DataEndException()
+            if sp >= self.row_num:
+                raise DataEndException()
         elif rg_type == 'time':
-            sp = Find(self.t, rg[0]+self.min_time)
-            ep = Find(self.t, rg[1]+self.min_time)
+            sp = numpy.searchsorted(self.t, rg[0]+self.min_time)
+            ep = numpy.searchsorted(self.t, rg[1]+self.min_time)
             # if rg[1] + self.min_time > self.max_time :
                 # import pdb;pdb.set_trace()
                 # raise Exception('Probably you set wrong range for normal flows? Go to check DETECTOR_DESC')
 
-            assert(sp != -1 and ep != -1)
-            if (sp == len(self.t)-1 or ep == len(self.t)-1):
-                # import pdb;pdb.set_trace()
+            if (sp == self.row_num or ep == self.row_num):
                 raise DataEndException()
         else:
             raise ValueError('unknow window type')
