@@ -1,7 +1,6 @@
 # from random import randint
 from __future__ import print_function, division, absolute_import
 
-### -- [2012-03-04 12:12:42] add binary_search
 ### -- [2012-03-26 14:01:02] add docstring for each function.
 
 def IN(*val_list):
@@ -14,25 +13,6 @@ def OUT(*val_list):
     to locals() in the class methods"""
     return ";".join(['self.%s=%s'%(v, v) for v in val_list])
 
-def binary_search(a, x, lo=0, hi=None):
-    """
-    Find the index of largest value in a that is smaller than x.
-    a is sorted Binary Search
-    """
-    # import pdb;pdb.set_trace()
-    if hi is None: hi = len(a)
-    while lo < hi:
-        mid = (lo + hi) // 2
-        midval = a[mid]
-        if midval < x:
-            lo = mid + 1
-        elif midval > x:
-            hi = mid
-        else:
-            return mid
-    return hi-1
-
-Find = binary_search
 
 import types
 def Load(var):

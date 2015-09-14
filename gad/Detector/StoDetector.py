@@ -374,6 +374,7 @@ class StoDetector (WindowDetector):
             W_mean = np.zeros((1, N**2))
             self.W = np.random.multivariate_normal(W_mean[0, :], Sigma, (1, self.SampleNum))
 
+    # TODO(hbhzwj) refactor _detect_window_ methods to separate classes.
     def _detect_window_info_entropy(self, rg, rg_type):
         if self.norm_em is None:
             self.norm_em = self.cal_norm_em()

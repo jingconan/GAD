@@ -4,7 +4,7 @@
         2. MySQL database. The base class is the :class:`MySQLDatabase`.
 """
 from __future__ import print_function, division, absolute_import
-from ..util import Find, DataEndException
+from ..util import DataEndException
 from ..util import abstract_method, DF, np
 import numpy
 from numpy.lib import recfunctions
