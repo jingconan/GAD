@@ -438,8 +438,6 @@ class StoDetector (WindowDetector):
             else:
                 print('flow: %s' %(time))
 
-            self.record(winT=time)
-
             try:
                 self.rg = [time, time+win_size] # For two window method
                 for window_info in detect_window_info:
@@ -447,6 +445,7 @@ class StoDetector (WindowDetector):
                                         '_detect_window_info_' + window_info)
                     processor(self.rg, rg_type)
 
+                self.record(winT=time)
             except FetchNoDataException:
                 print('there is no data to detect in this window')
             except DataEndException:
