@@ -375,8 +375,8 @@ class IPDataHandler(QuantizeDataHandler):
 class ModelFreeQuantizeDataHandler(QuantizeDataHandler):
    def get_em(self, rg, rg_type):
        """get model-free empirical measure"""
-       q_fea_vec = self.quantize_fea(rg, rg_type )
-       return model_free( q_fea_vec, self.fea_QN )
+       q_fea_vec = self.quantize_fea(rg, rg_type)
+       return model_free( q_fea_vec, self.fea_QN)
 
 class ModelBasedQuantizeDataHandler(QuantizeDataHandler):
    def get_em(self, rg, rg_type):
