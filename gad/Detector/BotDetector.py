@@ -3,9 +3,12 @@
 """
 from __future__ import print_function, division, absolute_import
 from subprocess import check_call
+import logging
 import numpy as np
 import scipy as sp
 import sys
+
+from .Correlation import TrafficCorrelationAnalyzer
 
 
 # def com_det(A, r_vec, w, lamb, out):
@@ -233,33 +236,37 @@ def randomization(S, P0, q0, sn=5000):
 from .Base import BaseDetector
 
 class BotDetector(BaseDetector):
-    def __init__(self, anomaly_detector):
-        self.anomaly_detector = anomaly_detector
+    def __init__(self, desc):
+        self.desc = desc
+        self.anomaly_detector = desc['anomaly_detector']
 
     def init_parser(self, parser):
         super(BotDetector, self).init_parser(parser)
         self.anomaly_detector.init_parser(parser)
         pass
 
-    def detect(self, no_anomaly_detect=False):
-        if not no_anomaly_detect:
-            self.data_file = self.anomaly_detector.data_file
+    def detect(self, data_file, anomaly_detect=True):
+        threshold = self.desc['threshold']
+        if anomaly_detect:
+            self.data_file = data_file
             self.anomaly_detector.desc.update(self.desc)
-            self.anomaly_detector.Detect(data_file, ref_file)
+            self.anomaly_detector.detect(data_file)
 
+        self.data_file = self.anomaly_detector.data_file
         divs = self.anomaly_detector.record_data['entropy']
+        if len(divs) == 0:
+            logging.warning('There is less than one window!')
+            return
         divs = np.array(divs, dtype=float) / np.max(divs)
         detect_result = divs > threshold
         winT = self.anomaly_detector.record_data['winT']
-        bot_ips = self.get_bot_ips(winT, detect_result)
-        self.record_data(bot_ips=bot_ips)
-        return bot_ips
+        return self.get_ips(winT, detect_result)
 
-    def get_bot_ips(self, window_times, detect_result):
+    def get_ips(self, window_times, detect_result):
         pass
 
 class SoBotDet(BotDetector):
-    def get_bot_ips(self, window_times, detect_result):
+    def get_ips(self, window_times, detect_result):
         import pandas
         ip_col_names = self.desc['ip_col_names']
         win_size = self.desc['win_size']
@@ -279,18 +286,20 @@ class SoBotDet(BotDetector):
         end_times = [t + win_size for t in start_times]
         abnormal_windows = pandas.DataFrame({
             'start_time': start_times,
-            'end_times': end_times,
+            'end_time': end_times,
         })
 
-        analyzer = TrafficCorrelationAnalyzer(self.data_file.data,
+        data = self.anomaly_detector.data_file.data
+        analyzer = TrafficCorrelationAnalyzer(data,
                                               ip_col_names[0],
                                               ip_col_names[1],
                                               abnormal_windows)
         features = analyzer.create_features(pivot_node_threshold)
-        node_list = list(analyzer.node_set)
-        total_interact_measure = features.sum(axis=0)
-        graph = analyzer.generate_correlation_graph(features, correlation_graph_threshold)
+        all_ips = list(analyzer.node_set)
 
+        total_interact_measure = features.sum(axis=0)
+        graph = analyzer.generate_correlation_graph(features,
+                                                    correlation_graph_threshold)
         P0, q0, W = com_det_reg(graph, total_interact_measure, w1, w2, lamb,
                                 out=sdpb_filepath)
         check_call([csdp_binary, sdpb_filepath, solution_filepath])
@@ -302,4 +311,10 @@ class SoBotDet(BotDetector):
         print('inta_diff', inta_diff)
 
         #  botnet, = np.nonzero(solution > 0)
-        return [n for n, d in zip(node_list, solution) if d > 0]
+        bot_ips = [n for n, d in zip(all_ips, solution) if d > 0]
+        return {
+            'detected_bot_ips': bot_ips,
+            'all_ips': all_ips,
+            'interact_measure_diff': inta_diff,
+            'correlation_graph': graph,
+        }

@@ -94,4 +94,11 @@ DETECTOR_DESC = {
     'alpha': 0.01,
     'label_col_name': 'Label',
     'ip_col_names': ['SrcAddr', 'DstAddr'],
+    'botnet_detection_config': {
+        'pivot_node_threshold': 1,
+        'correlation_graph_threshold': 0.1,
+        'w1': 1,
+        'w2': 2,
+        'lambda': 10,
+    },
 }

@@ -76,6 +76,7 @@ class TrafficCorrelationAnalyzer(object):
 
             interactions.append(interaction)
 
+
         pivot_nodes = self._identify_pivot_nodes(all_interactions, threshold)
         if len(pivot_nodes) == 0:
             logging.warning('There is no pivotal nodes detected!')
@@ -84,6 +85,9 @@ class TrafficCorrelationAnalyzer(object):
         self.features, self.node_set = \
             self._calculate_interact_measure(interactions,
                                              pivot_nodes)
+        if len(self.node_set) == 0:
+            logging.warning('all nodes are detected as pivot nodes. Are you '
+                            'sure?')
         return self.features
 
     def generate_correlation_graph(self, features, threshold):
