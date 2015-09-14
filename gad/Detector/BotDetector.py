@@ -294,8 +294,19 @@ class SoBotDet(BotDetector):
                                               ip_col_names[0],
                                               ip_col_names[1],
                                               abnormal_windows)
-        features = analyzer.create_features(pivot_node_threshold)
-        all_ips = list(analyzer.node_set)
+        result = analyzer.create_features(pivot_node_threshold)
+        if not result:
+            return {
+                'detected_bot_ips': [],
+                'all_ips': None,
+                'interact_measure_diff': 0,
+                'correlation_graph': None
+            }
+
+        features = result['features']
+        all_ips = result['all_nodes']
+        non_pivot_ips = result['non_pivot_nodes']
+        pivot_ips = result['pivot_nodes']
 
         total_interact_measure = features.sum(axis=0)
         graph = analyzer.generate_correlation_graph(features,
@@ -311,7 +322,8 @@ class SoBotDet(BotDetector):
         print('inta_diff', inta_diff)
 
         #  botnet, = np.nonzero(solution > 0)
-        bot_ips = [n for n, d in zip(all_ips, solution) if d > 0]
+        bot_ips = [n for n, d in zip(non_pivot_ips, solution) if d > 0]
+        bot_ips = list(set(bot_ips) | set(pivot_ips.keys()))
         return {
             'detected_bot_ips': bot_ips,
             'all_ips': all_ips,

@@ -27,8 +27,8 @@ class TestTrafficCorrelationAnalyzer(unittest.TestCase):
                                                           src_col='src',
                                                           dst_col='dst',
                                                           windows=windows)
-        features = analyzer.create_features(3)
-        self.assertIs(None, features)
+        result = analyzer.create_features(3)
+        self.assertIs(None, result)
 
     def test_case_one_pivot_node_trival_correlation(self):
         windows = pandas.DataFrame({
@@ -40,10 +40,10 @@ class TestTrafficCorrelationAnalyzer(unittest.TestCase):
                                                           src_col='src',
                                                           dst_col='dst',
                                                           windows=windows)
-        features = analyzer.create_features(2)
+        result = analyzer.create_features(2)
         expected = pandas.DataFrame([[3.0, 0.0], [0.0, 6.0]])
-        assert_frame_equal(expected, features)
-        graph = analyzer.generate_correlation_graph(features, 0.1)
+        assert_frame_equal(expected, result['features'])
+        graph = analyzer.generate_correlation_graph(result['features'], 0.1)
         expected = pandas.DataFrame([[True, True], [True, True]])
         assert_frame_equal(expected, graph)
 
@@ -57,7 +57,8 @@ class TestTrafficCorrelationAnalyzer(unittest.TestCase):
                                                           src_col='src',
                                                           dst_col='dst',
                                                           windows=windows)
-        features = analyzer.create_features(3)
+        result = analyzer.create_features(3)
+        features = result['features']
         assert_frame_equal(pandas.DataFrame([[5.0, 0.0], [0, 10.0], [10, 0]]),
                            features)
 
@@ -77,9 +78,9 @@ class TestTrafficCorrelationAnalyzer(unittest.TestCase):
                                                           src_col='src',
                                                           dst_col='dst',
                                                           windows=windows)
-        features = analyzer.create_features(1)
+        result = analyzer.create_features(1)
         expected = pandas.DataFrame([[3.0], [0.0]])
-        assert_frame_equal(expected, features)
+        assert_frame_equal(expected, result['features'])
 
 
 if __name__ == '__main__':

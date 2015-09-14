@@ -35,50 +35,28 @@ class BotnetDetectionEval(Detect):
     def parse_label(label):
         return 'Botnet' in label
 
-    def get_botnet_info(self):
+    def get_ground_truth(self):
         label_col_name = self.desc['label_col_name']
         ip_col_names = self.desc['ip_col_names']
+        detect_rg = self.desc.get('detect_rg')
         rg_type = self.desc['win_type']
-        win_size = self.desc['win_size']
         assert len(ip_col_names) <= 2, "at most two IP columns are allowed."
+        fetch_columns = [label_col_name] + ip_col_names
+        data_records = self.detector.data_file.data.get_rows(fetch_columns,
+                                                             rg=detect_rg,
+                                                             rg_type=rg_type)
+        ground_truth_bot_ips = set()
+        all_ips = set()
+        for row in data_records:
+            if self.parse_label(row[0]): # is botflow
+                ground_truth_bot_ips.add(row[1])
+                ground_truth_bot_ips.add(row[2])
+            all_ips.add(row[1])
+            all_ips.add(row[2])
 
-        # TODO(hbhzwj) use winT sotred in record_data is very ugly. Implement
-        # a method to register some logging function to detector.
-        record_data = self.detector.record_data
-        data_handler = self.detector.data_file
-        data_recorder = DataRecorder()
-        win_bot_ips = []
-        win_ips = []
-        for i, time in enumerate(record_data['winT']):
-            win_data = data_handler.data.get_rows(label_col_name,
-                                                  rg=[time, time + win_size],
-                                                  rg_type=rg_type)
-            is_botnet_flow = [self.parse_label(label) for label in win_data]
-            botnet_flow_num = sum(is_botnet_flow)
-            botnet_flow_ratio = botnet_flow_num * 1.0 / len(is_botnet_flow)
-
-            # Get IPS from flows with Botnet label and get the union set.
-            flow_ips = data_handler.data.get_rows(ip_col_names,
-                                             rg=[time, time + win_size],
-                                             rg_type=rg_type)
-
-            win_bot_ip = set()
-            win_ip = set()
-            for idx, ips in enumerate(flow_ips):
-                if is_botnet_flow[idx]:
-                    win_bot_ip |= set(ips)
-                win_ip |= set(ips)
-
-            win_bot_ips.append(win_bot_ip)
-            win_ips.append(win_ip)
-
-            data_recorder.add(botnet_flow_num=botnet_flow_num,
-                              flow_num=len(win_data),
-                              botnet_flow_ratio=botnet_flow_ratio)
         return {
-            'botnet_info': data_recorder.to_pandas_dataframe(),
-            'win_bot_ips': win_bot_ips,
-            'win_ips': win_ips,
+            'ground_truth_bot_ips': ground_truth_bot_ips,
+            'all_ips': all_ips,
         }
 
     @staticmethod
@@ -93,22 +71,29 @@ class BotnetDetectionEval(Detect):
 
     def eval(self):
         thresholds = self.desc['roc_thresholds']
-        label_info = self.get_botnet_info()
-        ground_truth_bot_ips = set.union(*label_info['win_bot_ips'])
-        all_ips = set.union(*label_info['win_ips'])
+        ground_truth = self.get_ground_truth()
 
         divs = self.detector.record_data['entropy']
         divs = np.array(divs, dtype=float) / np.max(divs)
 
-        bot_detector = BotDetector.SoBotDet()
+        bot_detector_desc = copy.deepcopy(self.desc)
+        bot_detector_desc.update({
+            'threshold': 0,
+            'anomaly_detector': self.detector,
+        })
+        bot_detector = BotDetector.SoBotDet(bot_detector_desc)
 
         data_recorder = DataRecorder()
         res = np.zeros((len(thresholds), 2))
         for i, threshold in enumerate(thresholds):
-            det_res = divs > threshold
-            detected_ips = bot_detector.detect(no_anomaly_detect=True)
+            bot_detector.desc['threshold'] = threshold
+            result = bot_detector.detect(None, anomaly_detect=False)
+            assert(not result['all_ips'] or
+                   set(result['all_ips']) == set(ground_truth['all_ips']))
             tp, fn, tn, fp, sensitivity, specificity = \
-                get_detect_metric(ground_truth_bot_ips, detected_ips, all_ips)
+                get_detect_metric(ground_truth['ground_truth_bot_ips'],
+                                  result['detected_bot_ips'],
+                                  ground_truth['all_ips'])
             tpr = tp * 1.0 / (tp + fn) if (tp + fn) > 0 else float('nan')
             fpr = fp * 1.0 / (fp + tn) if (fp + tn) > 0 else float('nan')
             data_recorder.add(threshold=threshold, tp=tp, tn=tn, fp=fp, fn=fn,
@@ -118,8 +103,7 @@ class BotnetDetectionEval(Detect):
         data_frame.set_index(['threshold'], drop=False)
         return {
             'metric': data_frame,
-            'botnet_info': label_info['botnet_info'],
-            'bot_ips': ground_truth_bot_ips,
+            'bot_ips': ground_truth['ground_truth_bot_ips'],
         }
 
     def run(self):
@@ -127,7 +111,7 @@ class BotnetDetectionEval(Detect):
         update_not_none(self.desc, self.args.__dict__)
 
         self.detect()
-        self.eval()
+        return self.eval()
 
 
 class TimeBasedBotnetDetectionEval(BotnetDetectionEval):

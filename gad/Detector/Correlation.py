@@ -39,26 +39,26 @@ class TrafficCorrelationAnalyzer(object):
 
     @staticmethod
     def _calculate_interact_measure(window_data, pivot_nodes):
-        node_set = set()
+        all_nodes = set()
         def process_window(data):
             interact_measure = collections.defaultdict(float)
             for src, dst, weight in data:
-                node_set.add(src)
-                node_set.add(dst)
+                all_nodes.add(src)
+                all_nodes.add(dst)
                 interact_measure[src] += pivot_nodes.get(dst, 0)
                 interact_measure[dst] += pivot_nodes.get(src, 0)
             return interact_measure
 
         measures = [process_window(data) for data in window_data]
         # Remove pivot nodes
-        node_set -= set(pivot_nodes.keys())
+        non_pivot_nodes = all_nodes - set(pivot_nodes.keys())
         observations = []
         for measure in measures:
-            obs = [measure.get(node, 0) for node in node_set]
+            obs = [measure.get(node, 0) for node in non_pivot_nodes]
             observations.append(obs)
 
         # each column represents the feature of a node
-        return pandas.DataFrame(observations), node_set
+        return pandas.DataFrame(observations), non_pivot_nodes, all_nodes
 
     def create_features(self, threshold):
         interactions = []
@@ -77,18 +77,23 @@ class TrafficCorrelationAnalyzer(object):
             interactions.append(interaction)
 
 
-        pivot_nodes = self._identify_pivot_nodes(all_interactions, threshold)
-        if len(pivot_nodes) == 0:
+        self.pivot_nodes = self._identify_pivot_nodes(all_interactions, threshold)
+        if len(self.pivot_nodes) == 0:
             logging.warning('There is no pivotal nodes detected!')
             return
 
-        self.features, self.node_set = \
+        self.features, self.non_pivot_nodes, self.all_nodes = \
             self._calculate_interact_measure(interactions,
-                                             pivot_nodes)
-        if len(self.node_set) == 0:
+                                             self.pivot_nodes)
+        if len(self.non_pivot_nodes) == 0:
             logging.warning('all nodes are detected as pivot nodes. Are you '
                             'sure?')
-        return self.features
+        return {
+            'features': self.features,
+            'all_nodes': list(self.all_nodes),
+            'pivot_nodes': self.pivot_nodes,
+            'non_pivot_nodes': self.non_pivot_nodes,
+        }
 
     def generate_correlation_graph(self, features, threshold):
         self.correlation_coef = features.corr()

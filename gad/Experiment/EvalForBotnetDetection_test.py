@@ -2,15 +2,14 @@ from __future__ import print_function, division, absolute_import
 import pandas
 import tempfile
 import unittest
+import numpy
 
 from pandas.util.testing import assert_frame_equal
+from gad.Detector.Data import CSVFile
 
-from . import BotDetector
-from . import StoDetector
-from . import Data
-from . import DataHandler
+from . import EvalForBotnetDetection
 
-class TestSoBotDet(unittest.TestCase):
+class TestBotnetDetectionEval(unittest.TestCase):
     def setUp(self):
         raw_data = pandas.DataFrame({
             'StartTime': ['2011/08/16 10:01:46.000000',
@@ -21,14 +20,17 @@ class TestSoBotDet(unittest.TestCase):
             'Sport': ['100', '1000', '100', '200', 200],
             'SrcAddr': ['1.1.1.1', '2.1.1.1', '3.1.1.1', '1.1.1.1', '1.1.1.1'],
             'DstAddr': ['2.1.1.1', '3.1.1.1', '2.1.1.1', '2.1.1.1', '2.1.1.1'],
+            'Label': ['Normal', 'Botnet', 'Normal', 'Normal', 'Normal'],
         })
         self.temp_path = tempfile.mktemp(suffix='.csv')
         raw_data.to_csv(self.temp_path, sep=',')
 
-    def test_case_one(self):
-        import numpy
-        desc = {
+
+    @unittest.skip("demonstrating skipping")
+    def test_get_ground_truth(self):
+        detector_desc = {
             'version' : 1,
+            'data': self.temp_path,
             'interval': 1,
             'win_size': 1,
             'win_type': 'time',
@@ -61,26 +63,32 @@ class TestSoBotDet(unittest.TestCase):
                 'csdp_binary': 'csdp',
             },
             'threshold': 0.1,
+            'roc_thresholds': numpy.linspace(0, 1, 10).tolist(),
+            'label_col_name': 'Label',
         }
 
-        data = Data.CSVFile(self.temp_path, desc)
-        data_handler = DataHandler.ModelFreeQuantizeDataHandler(data, desc)
+        config = {
+            'DETECTOR_DESC': detector_desc
+        }
 
-        anomaly_detector = StoDetector.ModelFreeAnoDetector(desc)
-        base_result = anomaly_detector.detect(data_handler)
-        self.assertEqual([0.91629073187415511,
-                          1.6094379124341003,
-                          0.91629073187415511,
-                          0.91629073187415511],
-                         base_result['entropy'])
+        self.config_file = tempfile.mktemp(suffix='.json')
+        import json
+        json.dump(config, open(self.config_file, 'w'))
 
-        desc['anomaly_detector'] = anomaly_detector
-        bot_detector = BotDetector.SoBotDet(desc)
-        result = bot_detector.detect(None,
-                                     anomaly_detect=False)
-        self.assertEqual(16.0, result['interact_measure_diff'])
-        self.assertEqual(['2.1.1.1', '1.1.1.1', '3.1.1.1'],
-                         result['detected_bot_ips'])
+        argv = ['-c', self.config_file]
+        evaluator = EvalForBotnetDetection.BotnetDetectionEval(argv)
+        result = evaluator.run()
+        # TODO(hbhzwj) need to verify the result
+
+        ground_truth = evaluator.get_ground_truth()
+        self.assertEqual(set(['2.1.1.1', '1.1.1.1', '3.1.1.1']),
+                         ground_truth['all_ips'])
+        self.assertEqual(set(['2.1.1.1', '3.1.1.1']),
+                         ground_truth['ground_truth_bot_ips'])
+
+
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()
