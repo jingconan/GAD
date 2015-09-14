@@ -37,10 +37,6 @@ class Detect(BaseExper):
                 help="""--data [filename] will simply detect the flow file,
                 simulator will not run in this case""")
 
-        # parser.add_argument('-c', '--config', default=None,
-        #         type=load_para,
-        #         help="""config file with default arguments for detector""")
-
         parser.add_argument('-m', '--method', default=None,
                 help="""--method [method] will specify the method to use.
                 Avaliable options are: [%s]. If you want to compare the

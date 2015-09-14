@@ -111,7 +111,7 @@ def export_max_cut(W, out):
         dv[i] = 1
         F.append(np.diag(dv))
     c = np.ones((n,))
-    if isinstance(out, str):
+    if isinstance(out, str) or isinstance(out, unicode):
         with open(out, 'w') as fid:
             SDPA_writer(c, F, fid)
     else:

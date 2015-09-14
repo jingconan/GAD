@@ -1,7 +1,7 @@
 from __future__ import print_function, division, absolute_import
 import argparse
 import os
-from ..util import abstract_method, load_para
+from ..util import abstract_method, load_config
 
 # ROOT = os.environ.get('SADIT_ROOT')
 
@@ -33,8 +33,7 @@ class BaseExper(object):
         parser.add_argument('-h', '--help', default=False, action='store_true',
                 help="""print help message""")
         parser.add_argument('-c', '--config', default=None,
-                # type=lambda x: load_para(x, Namespace),
-                type=lambda x: load_para(x),
+                type=lambda x: load_config(x),
                 help="""config""")
 
     def run(self):

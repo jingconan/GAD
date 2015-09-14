@@ -206,9 +206,9 @@ def argsort(seq):
     return sorted(range(len(seq)), key=seq.__getitem__)
 
 
-def load_para(f_name, encap=None, allow_types=(list, str, dict, float, int),
+def load_config(f_name, encap=None, allow_types=(list, str, dict, float, int),
         kwargs={}):
-    """load parameters.
+    """load configurations.
 
     Parameters:
     ----------------------
@@ -223,21 +223,28 @@ def load_para(f_name, encap=None, allow_types=(list, str, dict, float, int),
     kwargs : dict
         contains some additional parameters
     """
-    ss = kwargs
-    execfile(f_name, ss)
-    if allow_types is not None:
-        res = dict()
-        for k, v in ss.iteritems():
-            for t_ in allow_types:
-                if isinstance(v, t_):
-                    res[k] = v
-                    break
-        ss = res
-    del ss['__builtins__']
+    if f_name.endswith('.py'):
+        config = kwargs
+        execfile(f_name, config)
+        if allow_types is not None:
+            res = dict()
+            for k, v in config.iteritems():
+                for t_ in allow_types:
+                    if isinstance(v, t_):
+                        res[k] = v
+                        break
+            config = res
+        del config['__builtins__']
 
-    return ss if encap is None else encap(ss)
+    elif f_name.endswith('.json'):
+        import json
+        config = json.load(open(f_name, 'r'))
+        config.update(kwargs)
+        return config
+    else:
+        raise Exception('unknown type of config!')
 
-
+    return config if encap is None else encap(config)
 
 import csv
 def save_csv(f_name, names, *args):
