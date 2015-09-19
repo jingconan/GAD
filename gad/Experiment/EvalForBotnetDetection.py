@@ -88,8 +88,6 @@ class BotnetDetectionEval(Detect):
         for i, threshold in enumerate(thresholds):
             bot_detector.desc['threshold'] = threshold
             result = bot_detector.detect(None, anomaly_detect=False)
-            assert(not result['all_ips'] or
-                   set(result['all_ips']) == set(ground_truth['all_ips']))
             tp, fn, tn, fp, sensitivity, specificity = \
                 get_detect_metric(ground_truth['ground_truth_bot_ips'],
                                   result['detected_bot_ips'],
@@ -97,13 +95,14 @@ class BotnetDetectionEval(Detect):
             tpr = tp * 1.0 / (tp + fn) if (tp + fn) > 0 else float('nan')
             fpr = fp * 1.0 / (fp + tn) if (fp + tn) > 0 else float('nan')
             data_recorder.add(threshold=threshold, tp=tp, tn=tn, fp=fp, fn=fn,
-                              tpr=tpr, fpr=fpr)
+                              tpr=tpr, fpr=fpr,
+                              detect_result=result)
 
         data_frame = data_recorder.to_pandas_dataframe()
         data_frame.set_index(['threshold'], drop=False)
         return {
             'metric': data_frame,
-            'bot_ips': ground_truth['ground_truth_bot_ips'],
+            'ground_truth_bot_ips': ground_truth['ground_truth_bot_ips'],
         }
 
     def run(self):

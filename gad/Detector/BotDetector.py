@@ -300,11 +300,17 @@ class SoBotDet(BotDetector):
                 'detected_bot_ips': [],
                 'all_ips': None,
                 'interact_measure_diff': 0,
-                'correlation_graph': None
+                'correlation_graph': None,
+                'correlation_coef': None,
             }
 
         features = result['features']
-        all_ips = result['all_nodes']
+        # TODO(hbhzwj) Note that the interval for window is [start, end). In
+        # our implementation, if the last window is not a full window, a
+        # DataEnd Exception will be triggered and the last window is not
+        # processed. result['all_ips'] may contain less ips than
+        # ground_truth['all_ips']
+        all_ips_in_abnormal_windows = result['all_nodes']
         non_pivot_ips = result['non_pivot_nodes']
         pivot_ips = result['pivot_nodes']
 
@@ -326,7 +332,8 @@ class SoBotDet(BotDetector):
         bot_ips = list(set(bot_ips) | set(pivot_ips.keys()))
         return {
             'detected_bot_ips': bot_ips,
-            'all_ips': all_ips,
+            'all_ips_in_abnormal_windows': all_ips_in_abnormal_windows,
             'interact_measure_diff': inta_diff,
             'correlation_graph': graph,
+            'correlation_coef': analyzer.correlation_coef,
         }

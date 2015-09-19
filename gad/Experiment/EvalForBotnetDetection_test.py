@@ -12,22 +12,55 @@ from . import EvalForBotnetDetection
 class TestBotnetDetectionEval(unittest.TestCase):
     def setUp(self):
         raw_data = pandas.DataFrame({
-            'StartTime': ['2011/08/16 10:01:46.000000',
+            'StartTime': [
+                          # for normal flows.
+                          '2011/08/16 10:01:44.000000',
+                          '2011/08/16 10:01:45.000000',
+                          '2011/08/16 10:01:46.000000',
                           '2011/08/16 10:01:47.000000',
                           '2011/08/16 10:01:48.000000',
                           '2011/08/16 10:01:49.000000',
-                          '2011/08/16 10:01:50.000000'],
-            'Sport': ['100', '1000', '100', '200', 200],
-            'SrcAddr': ['1.1.1.1', '2.1.1.1', '3.1.1.1', '1.1.1.1', '1.1.1.1'],
-            'DstAddr': ['2.1.1.1', '3.1.1.1', '2.1.1.1', '2.1.1.1', '2.1.1.1'],
-            'Label': ['Normal', 'Botnet', 'Normal', 'Normal', 'Normal'],
+                          '2011/08/16 10:01:50.000000',
+                          '2011/08/16 10:01:51.000000',
+                          # for botnet flows.
+                          '2011/08/16 10:01:52.000000',
+                          '2011/08/16 10:01:53.000000',
+                          '2011/08/16 10:01:54.000000',
+                          '2011/08/16 10:01:55.000000',
+                          # end time
+                          '2011/08/16 10:01:56.000000',
+                         ],
+            'Sport': [
+                      '80', '80', '80', '22',
+                      '80', '80', '80', '22',
+                      '10000', '10000', '10000', '10000',
+                      '0',
+                     ],
+            # '2.1.1.1' is the botmaster. '1.1.1.1' and '3.1.1.1' are two bots.
+            # '2.1.1.2' and '3.2.1.2' are two normal nodes.
+            'SrcAddr': [
+                        '2.1.1.2', '3.2.1.2', '2.1.1.2', '3.2.1.2',
+                        '2.1.1.2', '3.2.1.2', '2.1.1.2', '3.2.1.2',
+                        '1.1.1.1', '2.1.1.1', '3.1.1.1', '1.1.1.1',
+                        'dummy',
+                       ],
+            'DstAddr': [
+                        '3.2.1.2', '2.1.1.2', '3.2.1.2', '2.1.1.2',
+                        '3.2.1.2', '2.1.1.2', '3.2.1.2', '2.1.1.2',
+                        '2.1.1.1', '3.1.1.1', '2.1.1.1', '2.1.1.1',
+                        'dummy',
+                       ],
+            'Label': [
+                      'Normal', 'Normal', 'Normal', 'Normal',
+                      'Normal', 'Normal', 'Normal', 'Normal',
+                      'Botnet', 'Botnet', 'Botnet', 'Botnet',
+                      'dummy',
+                     ],
         })
         self.temp_path = tempfile.mktemp(suffix='.csv')
         raw_data.to_csv(self.temp_path, sep=',')
 
 
-    @unittest.skip("demonstrating skipping")
-    def test_get_ground_truth(self):
         detector_desc = {
             'version' : 1,
             'data': self.temp_path,
@@ -43,7 +76,7 @@ class TestBotnetDetectionEval(unittest.TestCase):
                     'quantized_number': 500,
                 },
             ],
-            'normal_rg': None,
+            'normal_rg': [0, 8],
             'method': 'mf',
             'pic_show': True,
             'pic_name': './res.eps',
@@ -75,19 +108,33 @@ class TestBotnetDetectionEval(unittest.TestCase):
         import json
         json.dump(config, open(self.config_file, 'w'))
 
+
+    def test_botnet_detection_eval(self):
         argv = ['-c', self.config_file]
         evaluator = EvalForBotnetDetection.BotnetDetectionEval(argv)
         result = evaluator.run()
-        # TODO(hbhzwj) need to verify the result
 
         ground_truth = evaluator.get_ground_truth()
-        self.assertEqual(set(['2.1.1.1', '1.1.1.1', '3.1.1.1']),
+        expected_all_ips = ['2.1.1.2', '2.1.1.1', '1.1.1.1', '3.1.1.1',
+                            '3.2.1.2']
+        self.assertEqual(set(expected_all_ips + ['dummy']),
                          ground_truth['all_ips'])
-        self.assertEqual(set(['2.1.1.1', '3.1.1.1']),
+
+        expected_bot_ips = ['2.1.1.1', '3.1.1.1', '1.1.1.1']
+        self.assertEqual(set(expected_bot_ips),
                          ground_truth['ground_truth_bot_ips'])
 
+        result0 = result['metric'].detect_result[0]
+        all_ips_in_abnormal_windows = result0['all_ips_in_abnormal_windows']
+        self.assertEqual(set(['2.1.1.1', '1.1.1.1', '3.1.1.1']),
+                         set(all_ips_in_abnormal_windows))
 
-        pass
+        detected_bot_ips = result0['detected_bot_ips']
+        self.assertEqual(set(['2.1.1.1', '1.1.1.1', '3.1.1.1']),
+                         set(detected_bot_ips))
+
+        expected_coef = pandas.DataFrame([[1.0,-1.0], [-1.0, 1.0]])
+        assert_frame_equal(expected_coef, result0['correlation_coef'])
 
 
 if __name__ == '__main__':
