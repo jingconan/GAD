@@ -152,7 +152,6 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
                               FPR=FPR,
                               TPR=TPR)
 
-        import ipdb;ipdb.set_trace()
         return data_recorder.to_pandas_dataframe()
 
     def run(self):
@@ -170,7 +169,7 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
             self.detect()
             eval_result = self.eval()
             metric = eval_result['metric']
-            bot_ips = eval_result['bot_ips']
+            bot_ips = eval_result['ground_truth_bot_ips']
             bot_ip_num =float(len(bot_ips))
             correct_value = np.exp(alpha * timeframe_idx) + 1
             tTP = metric.tp * correct_value / bot_ip_num # UPDATE HERE
@@ -188,7 +187,7 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
             cur_time += timeframe_size
             timeframe_idx += 1
 
-        self.get_roc_curve(data_recorder.to_pandas_dataframe())
+        roc = self.get_roc_curve(data_recorder.to_pandas_dataframe())
         import ipdb;ipdb.set_trace()
 
     def plot(self, data_recorder):

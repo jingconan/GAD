@@ -319,17 +319,25 @@ class SoBotDet(BotDetector):
                                                     correlation_graph_threshold)
         P0, q0, W = com_det_reg(graph, total_interact_measure, w1, w2, lamb,
                                 out=sdpb_filepath)
-        check_call([csdp_binary, sdpb_filepath, solution_filepath])
+        def non_valid(v):
+            return np.any(np.isnan(P0)) or len(P0) == 0
 
-        node_num = len(total_interact_measure)
-        Z, X = parse_CSDP_sol(solution_filepath, node_num + 1)
-        solution = randomization(X, P0, q0)
-        inta_diff = np.dot(total_interact_measure, solution)
-        print('inta_diff', inta_diff)
+        if non_valid(P0) or non_valid(q0) or non_valid(W):
+            bot_ips = []
+            inta_diff = None
+        else:
+            check_call([csdp_binary, sdpb_filepath, solution_filepath])
 
-        #  botnet, = np.nonzero(solution > 0)
-        bot_ips = [n for n, d in zip(non_pivot_ips, solution) if d > 0]
-        bot_ips = list(set(bot_ips) | set(pivot_ips.keys()))
+            node_num = len(total_interact_measure)
+            Z, X = parse_CSDP_sol(solution_filepath, node_num + 1)
+            solution = randomization(X, P0, q0)
+            inta_diff = np.dot(total_interact_measure, solution)
+            print('inta_diff', inta_diff)
+
+            #  botnet, = np.nonzero(solution > 0)
+            bot_ips = [n for n, d in zip(non_pivot_ips, solution) if d > 0]
+            bot_ips = list(set(bot_ips) | set(pivot_ips.keys()))
+
         return {
             'detected_bot_ips': bot_ips,
             'all_ips_in_abnormal_windows': all_ips_in_abnormal_windows,
