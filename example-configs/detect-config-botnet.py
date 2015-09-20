@@ -72,11 +72,11 @@ DETECTOR_DESC = {
         #          'DEFAULT': 0
         #      },
         #  },
-        #  {
-        #      'feature_name': 'Sport',
-        #      'feature_type': 'port',
-        #      'quantized_number': 500,
-        #  },
+        {
+            'feature_name': 'Sport',
+            'feature_type': 'port',
+            'quantized_number': 500,
+        },
         #  {
         #      'feature_name': 'SrcAddr',
         #      'feature_type': 'ipv4_address',
@@ -86,14 +86,14 @@ DETECTOR_DESC = {
             #  'ip_columns': ['SrcAddr'],
             #  'save_symbol_index_path': './SrcAddrSymbolIndex.json'
         #  },
-        {
-            'feature_name': 'SrcAddr',
-            'feature_type': 'categorical',
-            'symbol_index': {
-                '147.32.84.165': 1,
-                'DEFAULT': 0,
-            },
-        },
+        #  {
+        #      'feature_name': 'SrcAddr',
+        #      'feature_type': 'categorical',
+        #      'symbol_index': {
+        #          '147.32.84.165': 1,
+        #          'DEFAULT': 0,
+        #      },
+        #  },
 
     ],
     'normal_rg': [0, 1500],
@@ -102,10 +102,12 @@ DETECTOR_DESC = {
     'pic_name': './res.eps',
     'export_flows': None,
     'data_type': 'csv',
-    'roc_thresholds': numpy.linspace(0, 1, 10),
+    #  'roc_thresholds': numpy.linspace(0.2, 1, 10),
+    'roc_thresholds': numpy.linspace(0.6, 0.7, 10),
     'csv': None,
     'timeframe_size': 300,
-    'timeframe_rg': [1500, 6348],
+    #  'timeframe_rg': [1500, 6348],
+    'timeframe_rg': [2100, 2400],
     #  'timeframe_rg': [1500, 1800],
     'timeframe_decay_ratio': 0.01,
     'label_col_name': 'Label',
