@@ -107,7 +107,7 @@ DETECTOR_DESC = {
     'timeframe_size': 300,
     'timeframe_rg': [1500, 6348],
     #  'timeframe_rg': [1500, 1800],
-    'alpha': 0.01,
+    'timeframe_decay_ratio': 0.01,
     'label_col_name': 'Label',
     'ip_col_names': ['SrcAddr', 'DstAddr'],
     'botnet_detection_config': {

@@ -136,6 +136,77 @@ class TestBotnetDetectionEval(unittest.TestCase):
         expected_coef = pandas.DataFrame([[1.0,-1.0], [-1.0, 1.0]])
         assert_frame_equal(expected_coef, result0['correlation_coef'])
 
+class MockTimeBasedBotnetDetectionEval(
+    EvalForBotnetDetection.TimeBasedBotnetDetectionEval):
+
+    def __init__(self, eval_results, *args, **kwargs):
+        self.eval_results = eval_results
+        super(MockTimeBasedBotnetDetectionEval, self).__init__(*args, **kwargs)
+
+    def detect(self):
+        pass
+
+    def eval(self):
+        return self.eval_results[tuple(self.desc['detect_rg'])]
+
+
+class TestTimeBasedBotnetDetectionEval(unittest.TestCase):
+    # Please see https://goo.gl/TdNzG7 for the spreadsheet that checks the
+    # math for the unittest.
+    def test_time_based_botnet_detection_eval(self):
+        detector_desc = {
+            'version' : 1,
+            'roc_thresholds': [0.2, 0.4],
+            'timeframe_size': 1,
+            'timeframe_rg': [0, 2],
+            'timeframe_decay_ratio': 0.01,
+        }
+
+        config = {
+            'DETECTOR_DESC': detector_desc
+        }
+
+        self.config_file = tempfile.mktemp(suffix='.json')
+        import json
+        json.dump(config, open(self.config_file, 'w'))
+
+        argv = ['-c', self.config_file]
+        eval_results = {
+            (0, 1): {
+                'metric':pandas.DataFrame({
+                    'threshold': [0.2, 0.4],
+                    'tp': [1, 2],
+                    'fn': [3, 2],
+                    'fp': [2, 3],
+                    'tn': [4, 3],
+                    'tpr': [float('nan'), float('nan')],
+                    'fpr': [float('nan'), float('nan')],
+                }),
+                'ground_truth_bot_ips': ['1', '2', '3'],
+            },
+            (1, 2): {
+                'metric':pandas.DataFrame({
+                    'threshold': [0.2, 0.4],
+                    'tp': [2, 4],
+                    'fn': [4, 2],
+                    'fp': [1, 3],
+                    'tn': [2, 5],
+                    'tpr': [float('nan'), float('nan')],
+                    'fpr': [float('nan'), float('nan')],
+                }),
+                'ground_truth_bot_ips': ['1', '2', '3', '4'],
+            },
+        }
+
+        evaluator = MockTimeBasedBotnetDetectionEval(eval_results, argv)
+        result = evaluator.run()
+        expected_result = pandas.DataFrame({
+            'threshold': [0.2, 0.4],
+            'FPR': [0.3333333333, 0.4375],
+            'TPR': [0.2940140854, 0.5880281707],
+        })
+        assert_frame_equal(expected_result, result)
+
 
 if __name__ == '__main__':
     unittest.main()

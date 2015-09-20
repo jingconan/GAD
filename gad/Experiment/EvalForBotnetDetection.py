@@ -137,7 +137,7 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
                       "the second one is end time. Data in the range will be "
                       "divided to timeframes for evaluation."))
 
-        parser.add_argument('--alpha', default=None, type=float,
+        parser.add_argument('--timeframe_decay_ratio', default=None, type=float,
                 help="parameter in the exp correction function.")
 
     def get_roc_curve(self, stats):
@@ -159,7 +159,7 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
         thresholds = self.desc['roc_thresholds']
         assert len(timeframe_rg) == 2, "unknown format of timeframe_rg"
         timeframe_size = self.desc['timeframe_size']
-        alpha = self.desc['alpha']
+        timeframe_decay_ratio = self.desc['timeframe_decay_ratio']
 
         cur_time = timeframe_rg[0]
         data_recorder = DataRecorder()
@@ -171,11 +171,11 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
             metric = eval_result['metric']
             bot_ips = eval_result['ground_truth_bot_ips']
             bot_ip_num =float(len(bot_ips))
-            correct_value = np.exp(alpha * timeframe_idx) + 1
+            correct_value = np.exp(-1 * timeframe_decay_ratio * timeframe_idx) + 1
             tTP = metric.tp * correct_value / bot_ip_num # UPDATE HERE
             tFN = metric.fn * correct_value / bot_ip_num
-            tFP = metric.fp / bot_ip_num
-            tTN = metric.tn / bot_ip_num
+            tFP = metric.fp * 1.0 / bot_ip_num
+            tTN = metric.tn * 1.0 / bot_ip_num
             for idx, threshold in enumerate(thresholds):
                 data_recorder.add(threshold=threshold,
                                   timeframe_idx=timeframe_idx,
@@ -188,7 +188,8 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
             timeframe_idx += 1
 
         roc = self.get_roc_curve(data_recorder.to_pandas_dataframe())
-        import ipdb;ipdb.set_trace()
+        #  import ipdb;ipdb.set_trace()
+        return roc
 
     def plot(self, data_recorder):
         pass
