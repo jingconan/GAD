@@ -61,8 +61,18 @@ class TrafficCorrelationAnalyzer(CorrelationAnalyzer):
             obs = [measure.get(node, 0) for node in non_pivot_nodes]
             observations.append(obs)
 
+        observations = pandas.DataFrame(observations)
+        interact_measure_sum = observations.sum()
+
+        non_pivot_nodes_array = np.array(list(non_pivot_nodes), dtype=str)
+        # a non pivot node is considered only if its interact measure sum is
+        # nonzero.
+        considered_indices = interact_measure_sum.nonzero()[0]
+        considered_obserations = observations[considered_indices]
+        considered_non_pivot_nodes = non_pivot_nodes_array[considered_indices].tolist()
+
         # each column represents the feature of a node
-        return pandas.DataFrame(observations), non_pivot_nodes, all_nodes
+        return considered_obserations, considered_non_pivot_nodes, all_nodes
 
     def create_features(self, threshold):
         interactions = []
@@ -108,4 +118,6 @@ class TrafficCorrelationAnalyzer(CorrelationAnalyzer):
         self.correlation_coef = features.corr()
         A = abs(self.correlation_coef) > threshold
         self.logger.debug('correlation graph size: %s.' % (A.shape[0]))
+        self.logger.debug('# of edges in correlation graph: %d.' %
+                          (A.sum().sum()))
         return A
