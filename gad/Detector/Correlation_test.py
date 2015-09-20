@@ -21,6 +21,7 @@ class TestTrafficCorrelationAnalyzer(unittest.TestCase):
         windows = pandas.DataFrame({
             'start_time': [0, 1],
             'end_time': [1, 3],
+            'win_type': ['flow', 'flow'],
         })
         data = CSVFile(self.temp_path, {'win_type': 'flow'})
         analyzer = Correlation.TrafficCorrelationAnalyzer(data,
@@ -34,6 +35,7 @@ class TestTrafficCorrelationAnalyzer(unittest.TestCase):
         windows = pandas.DataFrame({
             'start_time': [0, 1],
             'end_time': [1, 3],
+            'win_type': ['flow', 'flow'],
         })
         data = CSVFile(self.temp_path, {'win_type': 'flow'})
         analyzer = Correlation.TrafficCorrelationAnalyzer(data,
@@ -51,6 +53,7 @@ class TestTrafficCorrelationAnalyzer(unittest.TestCase):
         windows = pandas.DataFrame({
             'start_time': [0, 1, 3],
             'end_time': [1, 3, 5],
+            'win_type': ['flow', 'flow', 'flow'],
         })
         data = CSVFile(self.temp_path, {'win_type': 'flow'})
         analyzer = Correlation.TrafficCorrelationAnalyzer(data,
@@ -72,6 +75,7 @@ class TestTrafficCorrelationAnalyzer(unittest.TestCase):
         windows = pandas.DataFrame({
             'start_time': [0, 1],
             'end_time': [1, 3],
+            'win_type': ['flow', 'flow'],
         })
         data = CSVFile(self.temp_path, {'win_type': 'flow'})
         analyzer = Correlation.TrafficCorrelationAnalyzer(data,

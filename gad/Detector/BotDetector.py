@@ -287,6 +287,7 @@ class SoBotDet(BotDetector):
         abnormal_windows = pandas.DataFrame({
             'start_time': start_times,
             'end_time': end_times,
+            'win_type': [win_type] * len(start_times),
         })
         self.logger.debug('abnormal windows size: %d.' % (len(abnormal_windows)))
 

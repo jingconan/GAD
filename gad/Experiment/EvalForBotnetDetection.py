@@ -72,6 +72,10 @@ class BotnetDetectionEval(Detect):
     def eval(self):
         thresholds = self.desc['roc_thresholds']
         ground_truth = self.get_ground_truth()
+        self.logger.debug('# of ips in this time frame: %d.' %
+                            (len(ground_truth['all_ips'])))
+        self.logger.debug('# of bot ips in this time frame: %d.' %
+                          (len(ground_truth['ground_truth_bot_ips'])))
 
         divs = self.detector.record_data['entropy']
         divs = np.array(divs, dtype=float) / np.max(divs)

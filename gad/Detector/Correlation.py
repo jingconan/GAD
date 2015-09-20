@@ -26,13 +26,15 @@ class TrafficCorrelationAnalyzer(CorrelationAnalyzer):
         self.dst_col = dst_col
         self.windows = windows
 
-    @staticmethod
     # interactions has format (src, dst, weight)
-    def _identify_pivot_nodes(interactions, threshold):
+    def _identify_pivot_nodes(self, interactions, threshold):
         node_weight = collections.defaultdict(float)
         for src, dst, weight in interactions:
             node_weight[src] += weight
             node_weight[dst] += weight
+
+        self.logger.debug('# of nodes used to identify pivot nodes is: %d.' %
+                          (len(node_weight)))
 
         # return all nodes whose weight is > threshold
         return dict((node, weight)
@@ -69,7 +71,7 @@ class TrafficCorrelationAnalyzer(CorrelationAnalyzer):
             window_df = self.data.get_rows(fields=[self.src_col, self.dst_col],
                                            rg=[row['start_time'],
                                                row['end_time']],
-                                           rg_type='flow')
+                                           rg_type=row['win_type'])
             interaction = []
             for src, dst in window_df:
                 tmp = [src, dst, 1]
@@ -91,7 +93,9 @@ class TrafficCorrelationAnalyzer(CorrelationAnalyzer):
         if len(self.non_pivot_nodes) == 0:
             self.logger.warning('all nodes are detected as pivot nodes. Are you '
                             'sure?')
-        self.logger.info('# of non pivot nodes is: %d' % (len(self.non_pivot_nodes)))
+        self.logger.info('# of non pivot nodes is: %d' %
+                         (len(self.non_pivot_nodes)))
+        self.logger.info('# of all nodes is: %d' % (len(self.all_nodes)))
 
         return {
             'features': self.features,
