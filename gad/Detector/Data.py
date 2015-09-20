@@ -197,8 +197,20 @@ class CSVFile(MEM_DiskFile):
         if self.desc['win_type'] == 'time':
             time_index_feature_name = self.desc.get('time_index_feature_name',
                                                     'time')
-            self.table = pandas.io.parsers.read_csv(self.f_name,
-                                                    parse_dates=[time_index_feature_name])
+            date_parser = self.desc.get('date_parser')
+            # If date_parser is only a format string, create a lambda function
+            # for it.
+            if isinstance(date_parser, str):
+                date_parser = lambda date: pandas.datetime.strptime(date,
+                                                                    date_parser)
+
+            if date_parser:
+                self.table = pandas.io.parsers.read_csv(self.f_name,
+                                                        parse_dates=[time_index_feature_name],
+                                                        date_parser=date_parser)
+            else:
+                self.table = pandas.io.parsers.read_csv(self.f_name,
+                                                        parse_dates=[time_index_feature_name])
             self.row_num = self.table.shape[0]
             self.t = np.array(self.table.get(time_index_feature_name), dtype=float)
             self.t /= 1e9

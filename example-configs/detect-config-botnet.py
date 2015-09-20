@@ -6,6 +6,17 @@ ROOT = ''
 # no longer a dict but a array of dict.
 VERSION = 1
 
+#2011/08/16 10:01:46.972101
+def fast_date_parser(date):
+    assert(len(date) == 26)
+    return datetime(year=int(date[0:4]),
+                    month=int(date[5:7]),
+                    day=int(date[8:10]),
+                    hour=int(date[11:13]),
+                    minute=int(date[14:16]),
+                    second=int(date[17:19]),
+                    microsecond=int(date[20:26]))
+
 #################################
 ##   Parameters For Detector  ###
 #################################
@@ -18,6 +29,11 @@ DETECTOR_DESC = {
     'fr_win_size': 100, # window size for estimation of flow rate
     'false_alarm_rate': 0.001,
     'time_index_feature_name': 'StartTime',
+    # date_parse can either be a format string or a function. If it is a
+    # string, a parser function will be contructed using
+    # pandas.datetime.strptime.
+    #  'date_parser': '%Y/%m/%d %H:%M:%S.%f',
+    'date_parser': fast_date_parser,
     'fea_option': [
         #  {
         #      'feature_name': 'TotBytes',
