@@ -87,6 +87,7 @@ class BotnetDetectionEval(Detect):
         res = np.zeros((len(thresholds), 2))
         for i, threshold in enumerate(thresholds):
             bot_detector.desc['threshold'] = threshold
+            self.logger.info('Start to detect with threshold %s ' % (threshold))
             result = bot_detector.detect(None, anomaly_detect=False)
             tp, fn, tn, fp, sensitivity, specificity = \
                 get_detect_metric(ground_truth['ground_truth_bot_ips'],
@@ -188,7 +189,8 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
             timeframe_idx += 1
 
         roc = self.get_roc_curve(data_recorder.to_pandas_dataframe())
-        #  import ipdb;ipdb.set_trace()
+        print('roc metric is: ')
+        print(roc)
         return roc
 
     def plot(self, data_recorder):

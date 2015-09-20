@@ -10,6 +10,7 @@ __status__ = "Development"
 import collections
 import copy
 import os
+import sys
 
 
 from ..util import DataEndException, FetchNoDataException, abstract_method
@@ -386,6 +387,10 @@ class StoDetector (WindowDetector):
         flow_num = self.get_flow_num_between(rg, rg_type)
         self.record(threshold=self.get_threshold(flow_num))
 
+    def show_progress(self, rg_type, value):
+        sys.stdout.write("%s: %d\r" % (rg_type, value))
+        sys.stdout.flush()
+
     # def detect(self, data_file, nominal_rg = [0, 1000], rg_type='time',  max_detect_num=None):
     def detect(self, data_file, ref_file=None):
         """ main function to detect.
@@ -434,10 +439,7 @@ class StoDetector (WindowDetector):
             if detect_rg and time > detect_rg[1]:
                 break
 
-            if rg_type == 'time':
-                print('time: %f' %(time))
-            else:
-                print('flow: %s' %(time))
+            self.show_progress(rg_type, time)
 
             try:
                 self.rg = [time, time+win_size] # For two window method

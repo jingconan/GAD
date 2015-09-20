@@ -2,29 +2,33 @@
 """
 from __future__ import print_function, division
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger('util')
+
 try:
     import numpy as np
 except ImportError:
     np = None
-    print('--> [wanring], no numpy, some funcationality may be affected')
+    logger.warning('no numpy, some funcationality may be affected')
 
 try:
     import guiqwt.pyplot as plt
-    print('--> Use [guiqwt] as plot backend')
+    logger.info('Use [guiqwt] as plot backend')
 except ImportError:
     try:
         import matplotlib.pyplot as plt
         # import guiqwt.pyplot as plt
-        print('--> Use [matplotlib] as plot backend')
+        logger.info('Use [matplotlib] as plot backend')
     except Exception:
         plt = None
-        print('--> [wanring], no [guiqwt] and [matplotlib], cannot visualize the result')
+        logger.warning('No [guiqwt] and [matplotlib], cannot visualize the result')
 
 try:
     from collections import Counter
 except ImportError:
     Counter = None
-    print('--> [wanring], no collection.Counter , some funcationality may be affected')
+    logger.warning('No [collection.Counter], some funcationality may be affected')
 
 try:
     import _mysql as mysql
@@ -41,7 +45,7 @@ except ImportError:
             'LONGLONG': None
         })
 
-    print('--> [warning] cannot import sql related function, reading for sql server is not supported')
+    logger.warning('Cannot import sql related function, reading for sql server is not supported')
 
 
 try:

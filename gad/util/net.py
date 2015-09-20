@@ -1,4 +1,8 @@
 from __future__ import print_function, division, absolute_import
+import logging
+logging.basicConfig()
+logger = logging.getLogger('util')
+
 def get_net(ipaddress, netmask):
     """get network address from the ipaddres and netmask
     >>> get_net('10.7.2.1', '255.255.255.0')
@@ -69,7 +73,8 @@ def len2mask(len):
 try:
     from socketIO_client import SocketIO
 except:
-    print('[warning] socketIO_client is not found. Real-time ability is disabled')
+    logger.warning('Cannot find [socketIO_client], real-time ability is '
+                   'disabled.')
     SocketIO = False
 
 import time

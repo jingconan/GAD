@@ -72,11 +72,11 @@ DETECTOR_DESC = {
         #          'DEFAULT': 0
         #      },
         #  },
-        {
-            'feature_name': 'Sport',
-            'feature_type': 'port',
-            'quantized_number': 500,
-        },
+        #  {
+        #      'feature_name': 'Sport',
+        #      'feature_type': 'port',
+        #      'quantized_number': 500,
+        #  },
         #  {
         #      'feature_name': 'SrcAddr',
         #      'feature_type': 'ipv4_address',
@@ -86,14 +86,14 @@ DETECTOR_DESC = {
             #  'ip_columns': ['SrcAddr'],
             #  'save_symbol_index_path': './SrcAddrSymbolIndex.json'
         #  },
-        #  {
-        #      'feature_name': 'SrcAddr',
-        #      'feature_type': 'categorical',
-        #      'symbol_index': {
-        #          '147.32.84.165': 1,
-        #          'DEFAULT': 0,
-        #      },
-        #  },
+        {
+            'feature_name': 'SrcAddr',
+            'feature_type': 'categorical',
+            'symbol_index': {
+                '147.32.84.165': 1,
+                'DEFAULT': 0,
+            },
+        },
 
     ],
     'normal_rg': [0, 1500],

@@ -3,7 +3,6 @@
 """
 from __future__ import print_function, division, absolute_import
 from subprocess import check_call
-import logging
 import numpy as np
 import scipy as sp
 import sys
@@ -237,6 +236,7 @@ from .Base import BaseDetector
 
 class BotDetector(BaseDetector):
     def __init__(self, desc):
+        super(BotDetector, self).__init__()
         self.desc = desc
         self.anomaly_detector = desc['anomaly_detector']
 
@@ -255,7 +255,7 @@ class BotDetector(BaseDetector):
         self.data_file = self.anomaly_detector.data_file
         divs = self.anomaly_detector.record_data['entropy']
         if len(divs) == 0:
-            logging.warning('There is less than one window!')
+            self.logger.warning('There is less than one window!')
             return
         divs = np.array(divs, dtype=float) / np.max(divs)
         detect_result = divs > threshold
@@ -288,6 +288,7 @@ class SoBotDet(BotDetector):
             'start_time': start_times,
             'end_time': end_times,
         })
+        self.logger.debug('abnormal windows size: %d.' % (len(abnormal_windows)))
 
         data = self.anomaly_detector.data_file.data
         analyzer = TrafficCorrelationAnalyzer(data,

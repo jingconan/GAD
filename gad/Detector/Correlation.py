@@ -7,8 +7,10 @@ import logging
 class CorrelationAnalyzer(object):
     """Interface of Correlation Analyzer
     """
+    LOGGER_NAME = 'detector'
     def __init__(self, data):
         self.data = data
+        self.logger = logging.getLogger(self.LOGGER_NAME)
 
     def create_feature(self):
         pass
@@ -17,11 +19,11 @@ class CorrelationAnalyzer(object):
         pass
 
 
-class TrafficCorrelationAnalyzer(object):
+class TrafficCorrelationAnalyzer(CorrelationAnalyzer):
     def __init__(self, data, src_col, dst_col, windows):
+        super(TrafficCorrelationAnalyzer, self).__init__(data)
         self.src_col = src_col
         self.dst_col = dst_col
-        self.data = data
         self.windows = windows
 
     @staticmethod
@@ -78,16 +80,19 @@ class TrafficCorrelationAnalyzer(object):
 
 
         self.pivot_nodes = self._identify_pivot_nodes(all_interactions, threshold)
+        self.logger.info('# of pivot nodes is: %d' % (len(self.pivot_nodes)))
         if len(self.pivot_nodes) == 0:
-            logging.warning('There is no pivotal nodes detected!')
+            self.logger.warning('There is no pivotal nodes detected!')
             return
 
         self.features, self.non_pivot_nodes, self.all_nodes = \
             self._calculate_interact_measure(interactions,
                                              self.pivot_nodes)
         if len(self.non_pivot_nodes) == 0:
-            logging.warning('all nodes are detected as pivot nodes. Are you '
+            self.logger.warning('all nodes are detected as pivot nodes. Are you '
                             'sure?')
+        self.logger.info('# of non pivot nodes is: %d' % (len(self.non_pivot_nodes)))
+
         return {
             'features': self.features,
             'all_nodes': list(self.all_nodes),
@@ -98,4 +103,5 @@ class TrafficCorrelationAnalyzer(object):
     def generate_correlation_graph(self, features, threshold):
         self.correlation_coef = features.corr()
         A = abs(self.correlation_coef) > threshold
+        self.logger.debug('correlation graph size: %s.' % (A.shape[0]))
         return A
