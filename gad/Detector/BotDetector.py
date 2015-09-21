@@ -264,7 +264,6 @@ class BotDetector(BaseDetector):
 
         # write some debug information
         win_num = len(divs)
-        self.logger.debug('detect_rg: %s' % (self.desc.get('detect_rg')))
         self.logger.debug('# of windows: %s' % (win_num))
         detect_map = ''.join(['x' if v else '.' for v in detect_result])
         self.logger.debug('detect result:')

@@ -9,6 +9,7 @@ __status__ = "Development"
 
 import collections
 import copy
+import datetime
 import os
 import sys
 
@@ -74,6 +75,7 @@ class StoDetector (WindowDetector):
     """
     real_time_logger = None
     def __init__(self, desc):
+        super(StoDetector, self).__init__()
         self.desc = desc
         self.record_data = collections.defaultdict(list)
         self.progress_bar = ProgressBar(width=50)
@@ -391,6 +393,16 @@ class StoDetector (WindowDetector):
         sys.stdout.write("%s: %d\r" % (rg_type, value))
         sys.stdout.flush()
 
+    def get_timestamp_string(self, time, format='%Y/%m/%d %H:%M:%S.%f'):
+        def convert(arg):
+            date = datetime.datetime.utcfromtimestamp(arg)
+            return date.strftime(format)
+
+        if isinstance(time, list):
+            return [self.data_file.data.get_timestamp(v, convert)
+                    for v in time]
+        return self.data_file.data.get_timestamp(time, convert)
+
     # def detect(self, data_file, nominal_rg = [0, 1000], rg_type='time',  max_detect_num=None):
     def detect(self, data_file, ref_file=None):
         """ main function to detect.
@@ -430,8 +442,14 @@ class StoDetector (WindowDetector):
         time = 0
         if 'flow_rate' in self.data_file.get_fea_list():
             time = self.desc['fr_win_size']
+
         if detect_rg:
             time = max(time, detect_rg[0])
+
+            self.logger.debug('detect_rg: %s' % (self.desc.get('detect_rg')))
+            if rg_type == 'time':
+                self.logger.debug('detect_rg: %s' %
+                                  (self.get_timestamp_string(detect_rg)))
 
         i = 0
         while True:

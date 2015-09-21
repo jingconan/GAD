@@ -70,6 +70,21 @@ class Data(object):
         abstract_method()
 
 
+    def get_timestamp(self, time, converter):
+        """Get the timestamp for (relative) time.
+
+        Parameters
+        ---------------
+        time: a float of time (relative to the start time).
+        converter: a converter function to process the timestamp.
+
+        Returns
+        --------------
+        the return type of converter
+        """
+        abstract_method()
+
+
 def IP(x):
     return tuple(int(v) for v in x.rsplit('.'))
 
@@ -190,6 +205,13 @@ class MEM_DiskFile(Data):
             min_vec.append(min(ar_view))
             max_vec.append(max(ar_view))
         return min_vec, max_vec
+
+    def get_timestamp(self, time, converter):
+        if self.desc.get('win_type') != 'time':
+            return
+
+        timestamp = time + self.min_time
+        return converter(timestamp)
 
 class CSVFile(MEM_DiskFile):
     def _init(self):
