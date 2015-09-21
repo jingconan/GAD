@@ -3,11 +3,13 @@
 """
 from __future__ import print_function, division, absolute_import
 from subprocess import check_call
+import itertools
 import numpy as np
 import scipy as sp
 import sys
 
 from .Correlation import TrafficCorrelationAnalyzer
+from .. import util
 
 
 # def com_det(A, r_vec, w, lamb, out):
@@ -259,6 +261,19 @@ class BotDetector(BaseDetector):
             return
         divs = np.array(divs, dtype=float) / np.max(divs)
         detect_result = divs > threshold
+
+        # write some debug information
+        win_num = len(divs)
+        self.logger.debug('detect_rg: %s' % (self.desc.get('detect_rg')))
+        self.logger.debug('# of windows: %s' % (win_num))
+        detect_map = ''.join(['x' if v else '.' for v in detect_result])
+        self.logger.debug('detect result:')
+        self.logger.debug(detect_map)
+        text_axis = util.generate_text_axis(win_num)
+        for i, line in enumerate(text_axis):
+            self.logger.debug(line)
+
+
         winT = self.anomaly_detector.record_data['winT']
         return self.get_ips(winT, detect_result)
 
@@ -324,8 +339,9 @@ class SoBotDet(BotDetector):
         def non_valid(v):
             return np.any(np.isnan(P0)) or len(P0) == 0
 
+        bot_ips = set(pivot_ips.keys())
         if non_valid(P0) or non_valid(q0) or non_valid(W):
-            bot_ips = []
+            non_pivot_bot_ips = set([])
             inta_diff = None
         else:
             check_call([csdp_binary, sdpb_filepath, solution_filepath])
@@ -334,11 +350,17 @@ class SoBotDet(BotDetector):
             Z, X = parse_CSDP_sol(solution_filepath, node_num + 1)
             solution = randomization(X, P0, q0)
             inta_diff = np.dot(total_interact_measure, solution)
-            print('inta_diff', inta_diff)
+            non_pivot_bot_ips = set([n for n, d in zip(non_pivot_ips,
+                                                       solution) if d > 0])
 
-            #  botnet, = np.nonzero(solution > 0)
-            bot_ips = [n for n, d in zip(non_pivot_ips, solution) if d > 0]
-            bot_ips = list(set(bot_ips) | set(pivot_ips.keys()))
+        bot_ips = list(bot_ips | non_pivot_bot_ips)
+
+        self.logger.debug('# of non pivot bot ips : %d.' % (len(non_pivot_ips)))
+        self.logger.debug('# of detected bot ips : %d.' % (len(bot_ips)))
+        self.logger.debug('# of ips in abnormal windows : %d.' %
+                          (len(all_ips_in_abnormal_windows)))
+        self.logger.debug(('Difference of interact measure between bots and '
+                           'normal ips: %f.') % (inta_diff))
 
         return {
             'detected_bot_ips': bot_ips,

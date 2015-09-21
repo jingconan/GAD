@@ -381,6 +381,29 @@ def get_detect_metric(A, B, W):
     return tp, fn, tn, fp, sensitivity, specificity
 
 
+def generate_text_axis(length):
+    """A function to generate text-base axis.
+    """
+    import itertools
+    import math
+    def get_text_with_sep(length, sep):
+        length = int(length)
+        c = itertools.cycle('0123456789')
+        return sep.join(c.next() for _ in xrange(length))
+
+    result = []
+    l_str = str(length)
+    sep = ' '
+    l = length
+    for _ in xrange(len(l_str)):
+        line = get_text_with_sep(math.ceil(l), sep[:-1])
+        result.append(line)
+        sep *= 10
+        l /= 10.0
+
+    return result
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
