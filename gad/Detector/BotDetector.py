@@ -355,7 +355,7 @@ class SoBotDet(BotDetector):
 
         bot_ips = list(bot_ips | non_pivot_bot_ips)
 
-        self.logger.debug('# of non pivot bot ips : %d.' % (len(non_pivot_ips)))
+        self.logger.debug('# of non pivot bot ips : %d.' % (len(non_pivot_bot_ips)))
         self.logger.debug('# of detected bot ips : %d.' % (len(bot_ips)))
         self.logger.debug('# of ips in abnormal windows : %d.' %
                           (len(all_ips_in_abnormal_windows)))
