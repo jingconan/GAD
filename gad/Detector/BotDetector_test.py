@@ -82,5 +82,67 @@ class TestSoBotDet(unittest.TestCase):
         self.assertEqual(['2.1.1.1', '1.1.1.1', '3.1.1.1'],
                          result['detected_bot_ips'])
 
+    # If graph size is > max_graph_to_solve, botnet discovery will not be
+    # excuated, only pivot nodes are reported as bots.
+    def test_max_graph_to_solve(self):
+        import numpy
+        desc = {
+            'version' : 1,
+            'interval': 1,
+            'win_size': 1,
+            'win_type': 'time',
+            'false_alarm_rate': 0.001,
+            'time_index_feature_name': 'StartTime',
+            'fea_option': [
+                {
+                    'feature_name': 'Sport',
+                    'feature_type': 'port',
+                    'quantized_number': 500,
+                },
+            ],
+            'normal_rg': None,
+            'method': 'mf',
+            'pic_show': True,
+            'pic_name': './res.eps',
+            'export_flows': None,
+            'data_type': 'csv',
+            'csv': None,
+            'alpha': 0.01,
+            'ip_col_names': ['SrcAddr', 'DstAddr'],
+            'botnet_detection_config': {
+                'pivot_node_threshold': 3,
+                'correlation_graph_threshold': 0.1,
+                'w1': 1,
+                'w2': 2,
+                'lambda': 10,
+                'sdpb_filepath': tempfile.mktemp(suffix='.sdpb'),
+                'solution_filepath': tempfile.mktemp(suffix='.sol'),
+                'csdp_binary': 'csdp',
+                'max_graph_to_solve': 1,
+            },
+            'threshold': 0.1,
+        }
+
+        data = Data.CSVFile(self.temp_path, desc)
+        data_handler = DataHandler.ModelFreeQuantizeDataHandler(data, desc)
+
+        anomaly_detector = StoDetector.ModelFreeAnoDetector(desc)
+        base_result = anomaly_detector.detect(data_handler)
+        self.assertEqual([0.91629073187415511,
+                          1.6094379124341003,
+                          0.91629073187415511,
+                          0.91629073187415511],
+                         base_result['entropy'])
+
+        desc['anomaly_detector'] = anomaly_detector
+        bot_detector = BotDetector.SoBotDet(desc)
+        result = bot_detector.detect(None,
+                                     anomaly_detect=False)
+        self.assertEqual(0, result['interact_measure_diff'])
+        self.assertEqual(['2.1.1.1'],
+                         result['detected_bot_ips'])
+
+
+
 if __name__ == '__main__':
     unittest.main()

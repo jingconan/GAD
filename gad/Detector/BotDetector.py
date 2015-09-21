@@ -294,6 +294,7 @@ class SoBotDet(BotDetector):
         sdpb_filepath = config.get('sdpb_filepath', './prob.sdpb')
         solution_filepath = config.get('solution_filepath', './botnet.sol')
         csdp_binary = config.get('csdp_binary', 'csdp')
+        max_graph_to_solve = config.get('max_graph_to_solve')
 
 
         start_times = [w for w, d in zip(window_times, detect_result) if d]
@@ -329,28 +330,30 @@ class SoBotDet(BotDetector):
         all_ips_in_abnormal_windows = result['all_nodes']
         non_pivot_ips = result['non_pivot_nodes']
         pivot_ips = result['pivot_nodes']
+        bot_ips = set(pivot_ips.keys())
 
         total_interact_measure = features.sum(axis=0)
         graph = analyzer.generate_correlation_graph(features,
                                                     correlation_graph_threshold)
-        P0, q0, W = com_det_reg(graph, total_interact_measure, w1, w2, lamb,
-                                out=sdpb_filepath)
-        def non_valid(v):
-            return np.any(np.isnan(P0)) or len(P0) == 0
 
-        bot_ips = set(pivot_ips.keys())
-        if non_valid(P0) or non_valid(q0) or non_valid(W):
-            non_pivot_bot_ips = set([])
-            inta_diff = None
-        else:
-            check_call([csdp_binary, sdpb_filepath, solution_filepath])
+        def valid_mat(v):
+            return not np.any(np.isnan(P0)) and len(P0) > 0
 
-            node_num = len(total_interact_measure)
-            Z, X = parse_CSDP_sol(solution_filepath, node_num + 1)
-            solution = randomization(X, P0, q0)
-            inta_diff = np.dot(total_interact_measure, solution)
-            non_pivot_bot_ips = set([n for n, d in zip(non_pivot_ips,
-                                                       solution) if d > 0])
+        non_pivot_bot_ips = set([])
+        inta_diff = 0
+        if not max_graph_to_solve or graph.shape[0] <= max_graph_to_solve:
+            P0, q0, W = com_det_reg(graph, total_interact_measure, w1, w2, lamb,
+                                    out=sdpb_filepath)
+
+            if valid_mat(P0) and valid_mat(q0) and valid_mat(W):
+                check_call([csdp_binary, sdpb_filepath, solution_filepath])
+
+                node_num = len(total_interact_measure)
+                Z, X = parse_CSDP_sol(solution_filepath, node_num + 1)
+                solution = randomization(X, P0, q0)
+                inta_diff = np.dot(total_interact_measure, solution)
+                non_pivot_bot_ips = set([n for n, d in zip(non_pivot_ips,
+                                                           solution) if d > 0])
 
         bot_ips = list(bot_ips | non_pivot_bot_ips)
 
