@@ -109,6 +109,7 @@ class BotnetDetectionEval(Detect):
         return {
             'metric': data_frame,
             'ground_truth_bot_ips': ground_truth['ground_truth_bot_ips'],
+            'all_ips': ground_truth['all_ips'],
         }
 
     def run(self):
@@ -190,12 +191,13 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
                 break
             metric = eval_result['metric']
             bot_ips = eval_result['ground_truth_bot_ips']
-            bot_ip_num =float(len(bot_ips))
+            bot_ip_num = float(len(bot_ips))
+            normal_ip_num = float(len(eval_result['all_ips'])) - bot_ip_num
             correct_value = np.exp(-1 * timeframe_decay_ratio * timeframe_idx) + 1
             tTP = metric.tp * correct_value / bot_ip_num # UPDATE HERE
             tFN = metric.fn * correct_value / bot_ip_num
-            tFP = metric.fp * 1.0 / bot_ip_num
-            tTN = metric.tn * 1.0 / bot_ip_num
+            tFP = metric.fp * 1.0 / normal_ip_num
+            tTN = metric.tn * 1.0 / normal_ip_num
             for idx, threshold in enumerate(thresholds):
                 data_recorder.add(threshold=threshold,
                                   timeframe_idx=timeframe_idx,

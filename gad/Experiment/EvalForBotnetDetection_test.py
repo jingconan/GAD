@@ -183,6 +183,7 @@ class TestTimeBasedBotnetDetectionEval(unittest.TestCase):
                     'fpr': [float('nan'), float('nan')],
                 }),
                 'ground_truth_bot_ips': ['1', '2', '3'],
+                'all_ips': ['1', '2', '3', '4', '5'],
             },
             (1, 2): {
                 'metric':pandas.DataFrame({
@@ -195,6 +196,7 @@ class TestTimeBasedBotnetDetectionEval(unittest.TestCase):
                     'fpr': [float('nan'), float('nan')],
                 }),
                 'ground_truth_bot_ips': ['1', '2', '3', '4'],
+                'all_ips': ['1', '2', '3', '4', '5'],
             },
         }
 
@@ -202,8 +204,10 @@ class TestTimeBasedBotnetDetectionEval(unittest.TestCase):
         result = evaluator.run()
         expected_result = pandas.DataFrame({
             'threshold': [0.2, 0.4],
-            'FPR': [0.3333333333, 0.4375],
-            'TPR': [0.2940140854, 0.5880281707],
+            'FPR': [0.3333333333, 0.409091],
+            'TPR': [0.294014, 0.588028],
+            'f1_score': [0.356838, 0.493262],
+            'precision': [0.453804, 0.424801],
         })
         assert_frame_equal(expected_result, result)
 
