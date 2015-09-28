@@ -296,7 +296,6 @@ class SoBotDet(BotDetector):
         csdp_binary = config.get('csdp_binary', 'csdp')
         max_graph_to_solve = config.get('max_graph_to_solve')
 
-
         start_times = [w for w, d in zip(window_times, detect_result) if d]
         end_times = [t + win_size for t in start_times]
         abnormal_windows = pandas.DataFrame({

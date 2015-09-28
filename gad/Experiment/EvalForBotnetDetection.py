@@ -145,6 +145,9 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
         parser.add_argument('--timeframe_decay_ratio', default=None, type=float,
                 help="parameter in the exp correction function.")
 
+        parser.add_argument('--output_prefix', default=None,
+                            help='prefix for output file')
+
     def get_roc_curve(self, stats):
         thresholds = self.desc['roc_thresholds']
         data_recorder = DataRecorder()
@@ -153,9 +156,13 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
             sum_stats = threshold_stats.sum()
             FPR = sum_stats.tFP / (sum_stats.tFP + sum_stats.tTN)
             TPR = sum_stats.tTP / (sum_stats.tTP + sum_stats.tFN)
+            precision = sum_stats.tTP / (sum_stats.tTP + sum_stats.tFP)
+            f1_score = 2 * precision * TPR / (precision + TPR)
             data_recorder.add(threshold=threshold,
                               FPR=FPR,
-                              TPR=TPR)
+                              TPR=TPR,
+                              precision=precision,
+                              f1_score=f1_score)
 
         return data_recorder.to_pandas_dataframe()
 
@@ -192,9 +199,12 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
             cur_time += timeframe_size
             timeframe_idx += 1
 
+        output_prefix = self.desc.get('output_prefix', 'output_prefix')
+        timeframe_results = data_recorder.to_pandas_dataframe()
+        timeframe_results.to_csv(output_prefix + '_time_frame.csv', sep=',')
+
         roc = self.get_roc_curve(data_recorder.to_pandas_dataframe())
-        print('roc metric is: ')
-        print(roc)
+        roc.to_csv(output_prefix + '_roc.csv', sep=',')
         return roc
 
     def plot(self, data_recorder):
