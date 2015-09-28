@@ -10,6 +10,7 @@ from ..Detector import MEM_FS
 from ..Detector import BotDetector
 from ..util import update_not_none, plt, np, DataRecorder
 from ..util import zdump, zload, Load, get_detect_metric
+from ..util import DataEndException
 import itertools
 import pandas
 
@@ -150,6 +151,9 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
 
     def get_roc_curve(self, stats):
         thresholds = self.desc['roc_thresholds']
+        if 'threshold' not in stats.columns:
+            return
+
         data_recorder = DataRecorder()
         for threshold in thresholds:
             threshold_stats = stats[stats.threshold==threshold]
@@ -179,7 +183,11 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
         while cur_time < timeframe_rg[1]:
             self.desc['detect_rg'] = [cur_time, cur_time + timeframe_size]
             self.detect()
-            eval_result = self.eval()
+            try:
+                eval_result = self.eval()
+            except DataEndException:
+                self.logger.warning('Has read end of the data in evaluation!')
+                break
             metric = eval_result['metric']
             bot_ips = eval_result['ground_truth_bot_ips']
             bot_ip_num =float(len(bot_ips))
@@ -204,7 +212,8 @@ class TimeBasedBotnetDetectionEval(BotnetDetectionEval):
         timeframe_results.to_csv(output_prefix + '_time_frame.csv', sep=',')
 
         roc = self.get_roc_curve(data_recorder.to_pandas_dataframe())
-        roc.to_csv(output_prefix + '_roc.csv', sep=',')
+        if roc is not None:
+            roc.to_csv(output_prefix + '_roc.csv', sep=',')
         return roc
 
     def plot(self, data_recorder):
