@@ -105,7 +105,7 @@ class StoDetector (WindowDetector):
 
         """
         super(StoDetector, self).init_parser(parser)
-        parser.add_argument('--hoeff_far', default=0.1, type=float,
+        parser.add_argument('--hoeff_far', default=None, type=float,
                 help="""false alarm rate for hoeffding rule, if this parameter is set while
                 entropy_th parameter is not set, will calculate threshold according to
                 hoeffding rule. Increase hoeff_far will decrease threshold""")
@@ -520,9 +520,6 @@ class StoDetector (WindowDetector):
 
             # for model-free method only
             # the following threshold is suggested in http://arxiv.org/abs/0909.2234
-            #  QuantLevel_1 = self.desc['fea_option'].get('flow_size_pkts')[0]
-            #  QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
-            # QuantLevel_3 = self.desc['fea_option'].get('cluster')
             return 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, quant_space_size - 1)
 
         # added by Jing Zhang (jingzbu@gmail.com)
@@ -548,16 +545,11 @@ class StoDetector (WindowDetector):
 
         # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mfmb' or self.desc['method'] == 'robust':
+	    # For 'mf'
             if self.desc['enable_sanov']:
                 return -1.0 / n * log(false_alarm_rate), -1.0 / n * log(false_alarm_rate)
-
-            #  QuantLevel_1 = self.desc['fea_option'].get('flow_size_pkts')[0]
-            #  QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
-            # print(QuantLevel_2)
-            # assert(1 == 2)
-            # QuantLevel_3 = self.desc['fea_option'].get('cluster')
-            eta1 = 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate,
-                                            quant_space_size - 1)
+            eta1 = 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, quant_space_size - 1)
+	    # For 'mb'
             G = self.G
             H = self.H
             W = self.W
@@ -622,8 +614,10 @@ class StoDetector (WindowDetector):
         if entropy_th:
             return entropy_th
         hoeff_far = self.desc.get('hoeff_far')
-        if hoeff_far:
+        if hoeff_far is not None:
             return self.hoeffding_rule(flow_num, hoeff_far)
+	else:
+	    return self.hoeffding_rule(flow_num, self.desc['false_alarm_rate'])
 
     def save_addi_info(self, **kwargs):
         """  save additional information"""
@@ -633,7 +627,7 @@ class StoDetector (WindowDetector):
         elif self.desc.get('hoeff_far') is not None:
             self.record_data['threshold'] = self.get_hoeffding_threshold(self.desc['hoeff_far'])
         else:
-            self.record_data['threshold'] = None
+            self.record_data['threshold'] = self.get_hoeffding_threshold(self.desc['false_alarm_rate'])
 
         # record the parameters
         self.record_data['desc'] = dict((k, v) \
