@@ -137,7 +137,8 @@ detect the data directly and plot the result.
 
 Examples:
 
-    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show
+    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show --lw 5
+    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mf --pic_show --lw 3
     $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show --enable_sanov
     $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mf --pic_show --enable_sanov
     $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow_ref.txt -m robust -r='dump test-data/sc.pk'
@@ -293,7 +294,7 @@ trying to solve practical problems.
 
 Email: `wangjing@bu.edu`
 
-Personal Webpage: http://people.bu.edu/wangjing/
+Personal Webpage: https://wangjingpage.wordpress.com/
 
 
 Jing Zhang
@@ -306,4 +307,4 @@ Email: `jzh@bu.edu`
 Personal Webpage: http://people.bu.edu/jzh/
 
 
-*Last updated on 10/22/2016 (By Jing Z.)*
+*Last updated on 10/23/2016 (By Jing Z.)*
