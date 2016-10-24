@@ -30,9 +30,9 @@ any question, please feel free to contact us.
 Installation
 ============
 
-GAD can be installed on Linux, Mac OS X and Windows (through cygwin) with python 2.7. However, we strongly recommend the debian-based OS, e.g., Ubuntu 12.04 or 14.04, for which we have prepared a one-command installation script. 
+GAD can be installed on Linux, Mac OS X and Windows (through cygwin) with python 2.7. However, we strongly recommend the debian-based OS, e.g., Ubuntu 12.04, 14.04, or 16.04, for which we have prepared a one-command installation script. We recommend using Anaconda2 as the Python environment; conda has a good ability to manage external packages.
 
-To be specific, if you are working on Ubuntu 12.04 or 14.04, do the following sequentially:
+To be specific, if you are working on Ubuntu, do the following sequentially:
 
 1. Change the working directory to where you want to install GAD, create a new folder `gad`, and then type:
 
@@ -138,7 +138,8 @@ detect the data directly and plot the result.
 
 Examples:
 
-    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show
+    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show --lw 5
+    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mf --pic_show --lw 3
     $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show --enable_sanov
     $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mf --pic_show --enable_sanov
     $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow_ref.txt -m robust -r='dump test-data/sc.pk'
@@ -294,7 +295,7 @@ trying to solve practical problems.
 
 Email: `wangjing@bu.edu`
 
-Personal Webpage: http://people.bu.edu/wangjing/
+Personal Webpage: https://wangjingpage.wordpress.com/
 
 
 Jing Zhang
@@ -307,4 +308,4 @@ Email: `jzh@bu.edu`
 Personal Webpage: http://people.bu.edu/jzh/
 
 
-*Last updated on 10/22/2016 (By Jing Z.)*
+*Last updated on 10/23/2016 (By Jing Z.)*
