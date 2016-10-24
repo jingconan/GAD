@@ -216,7 +216,6 @@ Examples:
 
     $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow.txt -m robust -r='dump test-data/sc.pk' --lamb=0.2
     $ ./cmdgad detectcompare -c ./example-configs/compare-detect.py -d ./test-data/n0_flow.txt -p mfmb,robust 
-    $ ./cmdgad detectcompare -c ./example-configs/compare-detect.py -d ./test-data/n0_flow.txt -p mfmb,robust --plot_dump --pic_show
 
 
 eval
@@ -298,8 +297,6 @@ Email: `wangjing@bu.edu`
 Personal Webpage: http://people.bu.edu/wangjing/
 
 
-Collaborator
-=============
 Jing Zhang
 
 Jing Zhang currently is a PhD student in Division of Systems Engineering, Boston University 
@@ -310,4 +307,4 @@ Email: `jzh@bu.edu`
 Personal Webpage: http://people.bu.edu/jzh/
 
 
-*Last updated on 1/25/2015 (By Jing Z.)*
+*Last updated on 10/22/2016 (By Jing Z.)*
