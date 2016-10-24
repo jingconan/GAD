@@ -105,7 +105,7 @@ class StoDetector (WindowDetector):
 
         """
         super(StoDetector, self).init_parser(parser)
-        parser.add_argument('--hoeff_far', default=None, type=float,
+        parser.add_argument('--hoeff_far', default=0.1, type=float,
                 help="""false alarm rate for hoeffding rule, if this parameter is set while
                 entropy_th parameter is not set, will calculate threshold according to
                 hoeffding rule. Increase hoeff_far will decrease threshold""")
