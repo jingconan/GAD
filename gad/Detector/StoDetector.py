@@ -430,7 +430,8 @@ class StoDetector (WindowDetector):
 
         self.data_file = data_file
         self.ref_file = data_file if ref_file is None else ref_file
-        self.norm_em = None
+        #self.norm_em = None
+	self.norm_em = self.cal_norm_em()
 
         detect_window_info = self.desc.get('detect_window_info')
         if detect_window_info is None:
@@ -1373,3 +1374,4 @@ class PeriodStaticDetector(FBAnoDetector):
                 break
 
         return self._combine(win_ems)
+

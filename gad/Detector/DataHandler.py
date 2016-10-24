@@ -267,6 +267,7 @@ class QuantizeDataHandler(DataHandler):
     def quantize_fea(self, rg=None, rg_type=None):
         """get quantized features for part of the flows"""
         fea_vec = self.get_fea_slice(rg, rg_type)
+	fea_vec = np.array(fea_vec.tolist())
         fr = self.global_fea_range
         quan_len = (fr[:, 1] - fr[:, 0]) / self.fea_QN
         min_val = np.outer(np.ones(fea_vec.shape[0],), fr[:, 0])
