@@ -112,6 +112,9 @@ class StoDetector (WindowDetector):
         parser.add_argument('--enable_sanov', default=False, action='store_true',
                 help="whether or not to use Sanov's theorem to estimate the threshold")
 
+        parser.add_argument('--lw', default=2.0, type=float,
+                help="""line width of the plot""")
+
         # parser.add_argument('--ccoef', default=0.0, type=float,
         #         help="""correction coefficient for calculat threshold using hoeffding rule.
         #         hoeffding threshold is only a asymotical result. An O(n) linear term has been
@@ -650,6 +653,7 @@ class StoDetector (WindowDetector):
         threshold = self.record_data['threshold']
         plot_points(rt, ep, threshold,
                 xlabel_=self.desc['win_type'], ylabel_= 'entropy',
+		lw=self.desc['lw'],
                 *args, **kwargs)
 
     def dump(self, data_name):
@@ -777,6 +781,7 @@ class ModelFreeAnoDetector(StoDetector):
                 xlabel_=self.desc['win_type'], ylabel_= 'entropy',
                 title_ = title_,
                 pic_name=None, pic_show=False,
+		lw=self.desc['lw'],
                 *args, **kwargs)
         if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
         if pic_show: plt.show()
@@ -793,7 +798,7 @@ class ModelBaseAnoDetector(StoDetector):
             pic_name=None, pic_show=False, csv=None,
             *args, **kwargs):
 
-        # cf. https://codeyarns.com/2014/10/27/how-to-change-size-of-matplotlib-plot/
+        # Please see https://codeyarns.com/2014/10/27/how-to-change-size-of-matplotlib-plot/
         # Get current size
         fig_size = plt.rcParams['figure.figsize']
 
@@ -818,6 +823,7 @@ class ModelBaseAnoDetector(StoDetector):
                 xlabel_=self.desc['win_type'], ylabel_= 'entropy',
                 title_ = title_,
                 pic_name=None, pic_show=False,
+		lw=self.desc['lw'],
                 *args, **kwargs)
         if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
         if pic_show: plt.show()
@@ -883,6 +889,7 @@ class FBAnoDetector(StoDetector):
                subplot_ = subplot_[0],
                title_ = title_[0],
                pic_name=None, pic_show=False,
+	       lw=self.desc['lw'],
                *args, **kwargs)
        plot_points(rt, mb, threshold_mb,
                figure_ = figure_,
@@ -890,6 +897,7 @@ class FBAnoDetector(StoDetector):
                subplot_ = subplot_[1],
                title_ = title_[1],
                pic_name=None, pic_show=False,
+	       lw=self.desc['lw'],
                *args, **kwargs)
        if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
        if pic_show: plt.show()

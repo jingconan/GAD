@@ -21,7 +21,7 @@ def find_seg(flag):
     tp.append(flag[n-1])
     return zip(start, end, tp)
 
-def plot_seg(X, Y, flag, marker=None, *args, **kwargs):
+def plot_seg(X, Y, flag, marker=None, lw=2.0, *args, **kwargs):
     """plot X and Y, but the points with flag == true to be one color, the result to be another color
     """
     font = {'family': 'normal',
@@ -35,13 +35,13 @@ def plot_seg(X, Y, flag, marker=None, *args, **kwargs):
         if marker[tp] is not None:
             # import ipdb;ipdb.set_trace()
             # plt.plot(X[a:b], Y[a:b], marker[tp], *args, **kwargs)
-            plt.plot(np.array(X[a:b]), np.array(Y[a:b]), marker[tp], linewidth=2, *args, **kwargs)
+            plt.plot(np.array(X[a:b]), np.array(Y[a:b]), marker[tp], linewidth=lw, *args, **kwargs)
 
 def plot_points(X, Y, threshold=None,  pic_show=False,
         pic_name=None, figure_=False, subplot_=111, title_ = None,
         xlabel_ = 'x', ylabel_ = 'y',
         ano_marker=['b-', 'r-'], threshold_marker='g--',
-        xlim_=None, ylim_=None,
+        xlim_=None, ylim_=None, lw=2.0,
         *args, **kwargs):
     """ plot points and lines is a customized way for showing anomalies
 
@@ -70,6 +70,8 @@ def plot_points(X, Y, threshold=None,  pic_show=False,
         marker for threshold
     xlim_, ylim_ : list, optional
         range of x and y axies.
+    lw : float, optional
+	line width of the plot
 
     Returns:
     --------------
@@ -98,12 +100,12 @@ def plot_points(X, Y, threshold=None,  pic_show=False,
 
     if threshold is not None:
         ano_flag = [ (1 if e > th  else 0) for e, th in zip(Y, threshold)]
-        plot_seg(X, Y, ano_flag, ano_marker, *args, **kwargs)
+        plot_seg(X, Y, ano_flag, ano_marker, lw, *args, **kwargs)
         if threshold_marker is not None:
             # plt.plot(X, threshold, threshold_marker, *args, **kwargs)
-            plt.plot(np.array(X), np.array(threshold), threshold_marker, linewidth=2, *args, **kwargs)
+            plt.plot(np.array(X), np.array(threshold), threshold_marker, linewidth=lw, *args, **kwargs)
     else:
-        plt.plot(np.array(X), np.array(Y), ano_marker[0], linewidth=2, *args, **kwargs)
+        plt.plot(np.array(X), np.array(Y), ano_marker[0], linewidth=lw, *args, **kwargs)
     if title_:
         plt.title(title_)
 

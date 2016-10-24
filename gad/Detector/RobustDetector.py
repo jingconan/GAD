@@ -401,7 +401,7 @@ class RobustDetector(StoDetector.FBAnoDetector):
             pic_name=None, pic_show=False, csv=None,
             *args, **kwargs):
 
-        # cf. https://codeyarns.com/2014/10/27/how-to-change-size-of-matplotlib-plot/
+        # Please see https://codeyarns.com/2014/10/27/how-to-change-size-of-matplotlib-plot/
         # Get current size
         fig_size = plt.rcParams['figure.figsize']
 
@@ -430,6 +430,7 @@ class RobustDetector(StoDetector.FBAnoDetector):
                 xlabel_=self.desc['win_type'], ylabel_= 'entropy',
                 # title_ = title_,
                 pic_name=None, pic_show=False,
+		lw=self.desc['lw'],
                 *args, **kwargs)
         plt.xlim([0, 24 * 7])
         plt.ylabel('divergence')
