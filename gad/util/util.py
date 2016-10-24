@@ -1,7 +1,6 @@
 # from random import randint
 from __future__ import print_function, division, absolute_import
 
-### -- [2012-03-04 12:12:42] add binary_search
 ### -- [2012-03-26 14:01:02] add docstring for each function.
 
 def IN(*val_list):
@@ -14,25 +13,6 @@ def OUT(*val_list):
     to locals() in the class methods"""
     return ";".join(['self.%s=%s'%(v, v) for v in val_list])
 
-def binary_search(a, x, lo=0, hi=None):
-    """
-    Find the index of largest value in a that is smaller than x.
-    a is sorted Binary Search
-    """
-    # import pdb;pdb.set_trace()
-    if hi is None: hi = len(a)
-    while lo < hi:
-        mid = (lo + hi) // 2
-        midval = a[mid]
-        if midval < x:
-            lo = mid + 1
-        elif midval > x:
-            hi = mid
-        else:
-            return mid
-    return hi-1
-
-Find = binary_search
 
 import types
 def Load(var):
@@ -226,9 +206,9 @@ def argsort(seq):
     return sorted(range(len(seq)), key=seq.__getitem__)
 
 
-def load_para(f_name, encap=None, allow_types=(list, str, dict, float, int),
+def load_config(f_name, encap=None, allow_types=(list, str, dict, float, int),
         kwargs={}):
-    """load parameters.
+    """load configurations.
 
     Parameters:
     ----------------------
@@ -243,21 +223,28 @@ def load_para(f_name, encap=None, allow_types=(list, str, dict, float, int),
     kwargs : dict
         contains some additional parameters
     """
-    ss = kwargs
-    execfile(f_name, ss)
-    if allow_types is not None:
-        res = dict()
-        for k, v in ss.iteritems():
-            for t_ in allow_types:
-                if isinstance(v, t_):
-                    res[k] = v
-                    break
-        ss = res
-    del ss['__builtins__']
+    if f_name.endswith('.py'):
+        config = kwargs
+        execfile(f_name, config)
+        if allow_types is not None:
+            res = dict()
+            for k, v in config.iteritems():
+                for t_ in allow_types:
+                    if isinstance(v, t_):
+                        res[k] = v
+                        break
+            config = res
+        del config['__builtins__']
 
-    return ss if encap is None else encap(ss)
+    elif f_name.endswith('.json'):
+        import json
+        config = json.load(open(f_name, 'r'))
+        config.update(kwargs)
+        return config
+    else:
+        raise Exception('unknown type of config!')
 
-
+    return config if encap is None else encap(config)
 
 import csv
 def save_csv(f_name, names, *args):
@@ -349,6 +336,73 @@ def zload(f_name):
     obj = pickle.load(f)
     f.close()
     return obj
+
+import collections
+
+class DataRecorder(object):
+    def __init__(self):
+        self._records = collections.defaultdict(list)
+        pass
+
+    def add(self, **kwargs):
+        for k, v in kwargs.iteritems():
+            self._records[k].append(v)
+
+    def reset(self):
+        self._records = collections.defaultdict(list)
+
+    def to_pandas_dataframe(self):
+        import pandas
+        return pandas.DataFrame(self._records)
+
+def get_detect_metric(A, B, W):
+    """**A** is the referece, and **B** is the detected result, **W** is the whole set
+    calculate the true positive, false negative, true negative and false positive
+    """
+    A = set(A)
+    B = set(B)
+    W = set(W)
+    # no of true positive, no of elements that belongs to B and also belongs to A
+    tp = len(set.intersection(A, B))
+
+    # no of false negative no of elements that belongs to A but doesn't belong to B
+    fn = len(A - B)
+
+    # no of true negative, no of element that not belongs to A and not belong to B
+    tn = len(W - set.union(A, B))
+    # no of false positive, no of element that not belongs to A but belongs to B
+    fp = len(B - A)
+
+    # sensitivity is the probability of a alarm given that the this flow is anormalous
+    sensitivity = tp * 1.0 / (tp + fn) if (tp + fn) > 0 else float('nan')
+    # specificity is the probability of there isn't alarm given that the flow is normal
+    specificity = tn * 1.0 / (tn + fp) if (tn + fp) > 0 else float('nan')
+
+    return tp, fn, tn, fp, sensitivity, specificity
+
+
+def generate_text_axis(length):
+    """A function to generate text-base axis.
+    """
+    import itertools
+    import math
+    def get_text_with_sep(length, sep):
+        length = int(length)
+        c = itertools.cycle('0123456789')
+        return sep.join(c.next() for _ in xrange(length))
+
+    result = []
+    l_str = str(length)
+    sep = ' '
+    l = length
+    for _ in xrange(len(l_str)):
+        line = get_text_with_sep(math.ceil(l), sep[:-1])
+        result.append(line)
+        sep *= 10
+        l /= 10.0
+
+    return result
+
 
 if __name__ == "__main__":
     import doctest

@@ -4,9 +4,8 @@
         2. MySQL database. The base class is the :class:`MySQLDatabase`.
 """
 from __future__ import print_function, division, absolute_import
-from .ClusterAlg import KMedians
+from ..util import DataEndException
 from ..util import abstract_method, DF, np
-from ..util import Find, DataEndException
 import numpy
 from numpy.lib import recfunctions
 
@@ -71,10 +70,40 @@ class Data(object):
         abstract_method()
 
 
+    def get_timestamp(self, time, converter):
+        """Get the timestamp for (relative) time.
 
-import pyximport; pyximport.install()
-from ..util import np
-from ..CythonUtil import IP, parse_records, c_parse_records_fs
+        Parameters
+        ---------------
+        time: a float of time (relative to the start time).
+        converter: a converter function to process the timestamp.
+
+        Returns
+        --------------
+        the return type of converter
+        """
+        abstract_method()
+
+
+def IP(x):
+    return tuple(int(v) for v in x.rsplit('.'))
+
+import re
+def parse_records(f_name, FORMAT, regular_expression):
+    flow = []
+    with open(f_name, 'r') as fid:
+        while True:
+            line = fid.readline()
+            if not line:
+                break
+            if line == '\n': # Ignore Blank Line
+                continue
+            line = line.strip()
+            item = re.split(regular_expression, line)
+            f = tuple(h(item[pos]) for k, pos, h in FORMAT)
+            flow.append(f)
+    return flow
+
 # IP = lambda x:tuple(int(v) for v in x.rsplit('.'))
 class MEM_DiskFile(Data):
     """ abstract base class for hard disk file The flow file into MEMory as a
@@ -133,17 +162,16 @@ class MEM_DiskFile(Data):
             return 0, self.row_num
         if rg_type == 'flow':
             sp, ep = rg
-            if sp >= self.row_num: raise DataEndException()
+            if sp >= self.row_num:
+                raise DataEndException()
         elif rg_type == 'time':
-            sp = Find(self.t, rg[0]+self.min_time)
-            ep = Find(self.t, rg[1]+self.min_time)
+            sp = numpy.searchsorted(self.t, rg[0]+self.min_time)
+            ep = numpy.searchsorted(self.t, rg[1]+self.min_time)
             # if rg[1] + self.min_time > self.max_time :
                 # import pdb;pdb.set_trace()
                 # raise Exception('Probably you set wrong range for normal flows? Go to check DETECTOR_DESC')
 
-            assert(sp != -1 and ep != -1)
-            if (sp == len(self.t)-1 or ep == len(self.t)-1):
-                # import pdb;pdb.set_trace()
+            if (sp == self.row_num or ep == self.row_num):
                 raise DataEndException()
         else:
             raise ValueError('unknow window type')
@@ -178,14 +206,41 @@ class MEM_DiskFile(Data):
             max_vec.append(max(ar_view))
         return min_vec, max_vec
 
+    def get_timestamp(self, time, converter):
+        if self.desc.get('win_type') != 'time':
+            return
+
+        timestamp = time + self.min_time
+        return converter(timestamp)
+
 class CSVFile(MEM_DiskFile):
     def _init(self):
         import pandas
-        self.table = pandas.io.parsers.read_csv(self.f_name)
-        self.row_num = self.table.shape[0]
-        self.t = self.table.get('time')
-        if self.t is None:
+        if self.desc['win_type'] == 'time':
+            time_index_feature_name = self.desc.get('time_index_feature_name',
+                                                    'time')
+            date_parser = self.desc.get('date_parser')
+            # If date_parser is only a format string, create a lambda function
+            # for it.
+            if isinstance(date_parser, str):
+                date_parser = lambda date: pandas.datetime.strptime(date,
+                                                                    date_parser)
+
+            if date_parser:
+                self.table = pandas.io.parsers.read_csv(self.f_name,
+                                                        parse_dates=[time_index_feature_name],
+                                                        date_parser=date_parser)
+            else:
+                self.table = pandas.io.parsers.read_csv(self.f_name,
+                                                        parse_dates=[time_index_feature_name])
+            self.row_num = self.table.shape[0]
+            self.t = np.array(self.table.get(time_index_feature_name), dtype=float)
+            self.t /= 1e9
+        else:
+            self.table = pandas.io.parsers.read_csv(self.f_name)
+            self.row_num = self.table.shape[0]
             self.t = range(self.row_num)
+
         self.min_time = min(self.t)
         self.max_time = max(self.t)
 
@@ -211,6 +266,7 @@ class MEM_IPFile(MEM_DiskFile):
                                    [cluster, dist_to_center])
 
     def _cluster_src_ip(self, cluster_num, unique_ip):
+        from ..util.ClusterAlg import KMedians
         # unique_src_cluster, center_pt = KMeans(unique_src_IP_vec_set, cluster_num, DF)
         unique_src_cluster, center_pt = KMedians(unique_ip, cluster_num, DF)
         cluster_map = dict(zip(unique_ip, unique_src_cluster))
@@ -258,16 +314,6 @@ class MEM_FS(MEM_IPFile):
         ('flow_size_pkts', np.float64, 1),
         ])
 
-    #FIXME the c_parse_records_fs will fail if the timestamp is very huge
-    # def parse(self):
-    #     try: # try optimized parse method written in cython first
-    #         self.table, self.row_num = c_parse_records_fs(self.f_name)
-    #     except Exception as e:
-    #         print('-' * 30)
-    #         print(e)
-    #         print('Please increase the MAXROW in CythonUtil.pyx')
-    #         print('-' * 30)
-    #         super(MEM_FS, self).parse()
 
 import datetime
 import time
@@ -356,8 +402,9 @@ class MEM_FlowExporter(MEM_DiskFile):
 
 def parse_complex_records(fileName, FORMAT, regular_expression):
     """
-    the input is the filename of the flow file that needs to be parsed.
-    the ouput is list of dictionary contains the information for each flow in the data. all these information are strings, users need
+    the input is the filename of the flow file that needs to be parsed.  the
+    ouput is list of dictionary contains the information for each flow in the
+    data. all these information are strings, users need
     to tranform them by themselves
     """
     flow = []

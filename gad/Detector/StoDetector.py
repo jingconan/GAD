@@ -7,7 +7,11 @@ __author__ = "Jing Conan Wang"
 __email__ = "wangjing@bu.edu"
 __status__ = "Development"
 
+import collections
+import copy
+import datetime
 import os
+import sys
 
 
 from ..util import DataEndException, FetchNoDataException, abstract_method
@@ -71,8 +75,9 @@ class StoDetector (WindowDetector):
     """
     real_time_logger = None
     def __init__(self, desc):
+        super(StoDetector, self).__init__()
         self.desc = desc
-        self.record_data = dict(entropy=[], winT=[], threshold=[], em=[])
+        self.record_data = collections.defaultdict(list)
         self.progress_bar = ProgressBar(width=50)
 
     def get_em(self, rg, rg_type):
@@ -100,7 +105,7 @@ class StoDetector (WindowDetector):
 
         """
         super(StoDetector, self).init_parser(parser)
-        parser.add_argument('--hoeff_far', default=0.01, type=float,
+        parser.add_argument('--hoeff_far', default=None, type=float,
                 help="""false alarm rate for hoeffding rule, if this parameter is set while
                 entropy_th parameter is not set, will calculate threshold according to
                 hoeffding rule. Increase hoeff_far will decrease threshold""")
@@ -145,8 +150,7 @@ class StoDetector (WindowDetector):
             self.record_data[k].append(v)
 
     def reset_record(self):
-        for k, v in self.record_data.iteritems():
-            self.record_data[k] = []
+        self.record_data = collections.defaultdict(list)
 
     def cal_norm_em(self, **kwargs):
         nominal_rg = self.desc['normal_rg']
@@ -306,37 +310,7 @@ class StoDetector (WindowDetector):
 
         return Sigma
 
-    # def detect(self, data_file, nominal_rg = [0, 1000], rg_type='time',  max_detect_num=None):
-    def detect(self, data_file, ref_file=None):
-        """ main function to detect.
-
-        it will slide the window, get the empirical measure and get the
-        indicator
-
-        Parameters
-        --------------------
-        data_file : subclass of **DataHandler**.
-                See DataHandler.py.
-
-        Returns
-        --------------------
-        record_data: dict
-                + desc : parameters used in the detection
-                + threshold : threshold
-
-        """
-        # nominal_rg = self.desc['normal_rg']
-        rg_type = self.desc['win_type']
-        max_detect_num = self.desc['max_detect_num']
-
-        self.data_file = data_file
-        self.ref_file = data_file if ref_file is None else ref_file
-        # import ipdb;ipdb.set_trace()
-        # self.ref_file = ref_file
-        # self.norm_em = self.get_em(rg=nominal_rg, rg_type=rg_type)
-        self.norm_em = self.cal_norm_em()
-        # self.desc['norm_em'] = self.norm_em
-
+    def _init_for_threshold_rule(self):
         ########### Added by Jing Zhang (jingzbu@gmail.com)
         if  self.desc['method'] == 'mb':
             self.mu = adjust_mat(self.norm_em)
@@ -403,32 +377,96 @@ class StoDetector (WindowDetector):
             W_mean = np.zeros((1, N**2))
             self.W = np.random.multivariate_normal(W_mean[0, :], Sigma, (1, self.SampleNum))
 
+    # TODO(hbhzwj) refactor _detect_window_ methods to separate classes.
+    def _detect_window_info_entropy(self, rg, rg_type):
+        if self.norm_em is None:
+            self.norm_em = self.cal_norm_em()
+        em = self.data_file.get_em(rg, rg_type)
+        entropy = self.I(em, norm_em=self.norm_em)
+        self.record(entropy=entropy, em=em)
+
+    def _detect_window_info_threshold(self, rg, rg_type):
+        flow_num = self.get_flow_num_between(rg, rg_type)
+        self.record(threshold=self.get_threshold(flow_num))
+
+    def show_progress(self, rg_type, value):
+        sys.stdout.write("%s: %d\r" % (rg_type, value))
+        sys.stdout.flush()
+
+    def get_timestamp_string(self, time, format='%Y/%m/%d %H:%M:%S.%f'):
+        def convert(arg):
+            date = datetime.datetime.utcfromtimestamp(arg)
+            return date.strftime(format)
+
+        if isinstance(time, list):
+            return [self.data_file.data.get_timestamp(v, convert)
+                    for v in time]
+        return self.data_file.data.get_timestamp(time, convert)
+
+    # def detect(self, data_file, nominal_rg = [0, 1000], rg_type='time',  max_detect_num=None):
+    def detect(self, data_file, ref_file=None):
+        """ main function to detect.
+
+        it will slide the window, get the empirical measure and get the
+        indicator
+
+        Parameters
+        --------------------
+        data_file : subclass of **DataHandler**.
+                See DataHandler.py.
+
+        Returns
+        --------------------
+        record_data: dict
+                + desc : parameters used in the detection
+                + threshold : threshold
+
+        """
+        rg_type = self.desc['win_type']
+        detect_rg = self.desc.get('detect_rg')
+
+        self.data_file = data_file
+        self.ref_file = data_file if ref_file is None else ref_file
+        self.norm_em = None
+
+        detect_window_info = self.desc.get('detect_window_info')
+        if detect_window_info is None:
+            detect_window_info = ['entropy', 'threshold']
+
         win_size = self.desc['win_size']
         interval = self.desc['interval']
 
-        time = self.desc['fr_win_size'] if ('flow_rate' in self.desc['fea_option'].keys()) else 0
+        self._init_for_threshold_rule()
+
+        # set initial time
+        time = 0
+        if 'flow_rate' in self.data_file.get_fea_list():
+            time = self.desc['fr_win_size']
+
+        if detect_rg:
+            time = max(time, detect_rg[0])
+
+            self.logger.debug('detect_rg: %s' % (self.desc.get('detect_rg')))
+            if rg_type == 'time':
+                self.logger.debug('detect_rg: %s' %
+                                  (self.get_timestamp_string(detect_rg)))
 
         i = 0
         while True:
             i += 1
-            if max_detect_num and i > max_detect_num:
+            if detect_rg and time > detect_rg[1]:
                 break
-            if rg_type == 'time' : print('time: %f' %(time))
-            else: print('flow: %s' %(time))
+
+            self.show_progress(rg_type, time)
 
             try:
                 self.rg = [time, time+win_size] # For two window method
-                em = self.data_file.get_em(rg=self.rg, rg_type=rg_type)
-                entropy = self.I(em, norm_em=self.norm_em)
-                # flow_num = self.get_flow_num_between(self.rg, rg_type)
-                # threshold_mf, threshold_mb = self.get_threshold(flow_num)
-                # print(threshold_mf)
-                # print(threshold_mb)
-                # assert(1 == 2)
-                self.record(entropy=entropy, winT=time, threshold=0, em=em)
-                # alarm_num = sum([1 for e in entropy if e >= threshold_mf or e >= threshold_mb])
-                # marker = '.' if alarm_num == 0 else str(alarm_num)
-                # self.progress_bar.update(i-1, time, marker)
+                for window_info in detect_window_info:
+                    processor = getattr(self,
+                                        '_detect_window_info_' + window_info)
+                    processor(self.rg, rg_type)
+
+                self.record(winT=time)
             except FetchNoDataException:
                 print('there is no data to detect in this window')
             except DataEndException:
@@ -467,6 +505,10 @@ class StoDetector (WindowDetector):
         # return -1.0 / n * log(false_alarm_rate) + self.desc['ccoef'] * log(n) / n
         # return -1.0 / n * log(false_alarm_rate)
 
+        # total number of quantized symbols, i.e., multiplication of quantized
+        # level in all dimensions.
+        quant_space_size = np.prod(self.data_file.get_quantized_levels())
+
         # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mf':
             if self.desc['enable_sanov']:
@@ -474,10 +516,10 @@ class StoDetector (WindowDetector):
 
             # for model-free method only
             # the following threshold is suggested in http://arxiv.org/abs/0909.2234
-            QuantLevel_1 = self.desc['fea_option'].get('flow_size_pkts')[0]
-            QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
+            #  QuantLevel_1 = self.desc['fea_option'].get('flow_size_pkts')[0]
+            #  QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
             # QuantLevel_3 = self.desc['fea_option'].get('cluster')
-            return 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, QuantLevel_1 * QuantLevel_2 - 1)
+            return 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, quant_space_size - 1)
 
         # added by Jing Zhang (jingzbu@gmail.com)
         if self.desc['method'] == 'mb':
@@ -505,12 +547,13 @@ class StoDetector (WindowDetector):
             if self.desc['enable_sanov']:
                 return -1.0 / n * log(false_alarm_rate), -1.0 / n * log(false_alarm_rate)
 
-            QuantLevel_1 = self.desc['fea_option'].get('flow_size_pkts')[0]
-            QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
+            #  QuantLevel_1 = self.desc['fea_option'].get('flow_size_pkts')[0]
+            #  QuantLevel_2 = self.desc['fea_option'].get('flow_size')[0]
             # print(QuantLevel_2)
             # assert(1 == 2)
             # QuantLevel_3 = self.desc['fea_option'].get('cluster')
-            eta1 = 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate, QuantLevel_1 * QuantLevel_2 - 1)
+            eta1 = 1.0 / (2 * n) * chi2.ppf(1 - false_alarm_rate,
+                                            quant_space_size - 1)
             G = self.G
             H = self.H
             W = self.W
@@ -554,38 +597,21 @@ class StoDetector (WindowDetector):
     def save_threshold(self, data_file):
         """ calculate threshold for each window and save it
         """
-        rg_type = self.desc['win_type']
-        max_detect_num = self.desc['max_detect_num']
+        # save original state
+        original_option = self.desc['detect_window_info']
+        self.desc['detect_window_info'] = ['threshold']
 
-        self.data_file = data_file
+        original_data = self.record_data
+        self.reset_record()
 
-        win_size = self.desc['win_size']
-        interval = self.desc['interval']
+        self.detect(data_file)
+        result = copy.deepcopy(self.record_data['threshold'])
 
-        time = self.desc['fr_win_size'] if ('flow_rate' in self.desc['fea_option'].keys()) else 0
+        # rollback the state
+        self.desc['detect_window_info'] = original_option
+        self.record_data = original_data
 
-        threshold = []
-        i = 0
-        while True:
-            i += 1
-            if max_detect_num and i > max_detect_num:
-                break
-            if rg_type == 'time' : print('time: %f' %(time))
-            else: print('flow: %s' %(time))
-
-            try:
-                self.rg = [time, time+win_size] # For two window method
-                flow_num = self.get_flow_num_between(self.rg, rg_type)
-                threshold.append(self.get_threshold(flow_num))
-            except FetchNoDataException:
-                print('there is no data to detect in this window')
-            except DataEndException:
-                print('\nreach data end, break')
-                break
-            time += interval
-        # print(threshold)
-        # assert(1 == 2)
-        return threshold
+        return result
 
     def get_threshold(self, flow_num):
         entropy_th = self.desc.get('entropy_th')
@@ -663,7 +689,8 @@ class StoDetector (WindowDetector):
         self.plot(*args, **kwargs)
 
     @staticmethod
-    def find_abnormal_windows(entropy, entropy_threshold=None, ab_win_portion=None, ab_win_num=None):
+    def find_abnormal_windows(entropy, entropy_threshold=None,
+                              ab_win_portion=None, ab_win_num=None):
         """ find abnormal windows out of all windows
 
         Parameters:
@@ -678,11 +705,14 @@ class StoDetector (WindowDetector):
         Notes
         -----------
         find abnormal windows. There are three standards to select abnormal windows:
-            1. when the entropy >= entropy_threshold. when entropy_threshold is a list. the length of entropy_threshold should
-                equals the length of entropy. The element in this list is the entropy threshold for window with corresponding position.
-            2. when it is winthin the top *portion* of entropy, 0 <= *portion* <= 1
-            3. when it is the top *sel_num* of entropy
-        the priority of 1 > 2 > 3.
+            1. when the entropy >= entropy_threshold. when entropy_threshold
+            is a list. the length of entropy_threshold should equals the
+            length of entropy. The element in this list is the entropy
+            threshold for window with corresponding position.
+            2. when it is winthin the top *portion* of entropy, 0 <= *portion*
+            <= 1
+            3. when it is the top *sel_num* of entropy.
+            the priority of 1 > 2 > 3.
         """
         num = len(entropy)
         if not entropy_threshold:
@@ -697,7 +727,8 @@ class StoDetector (WindowDetector):
             return [ i for i in xrange(num) if entropy[i] >= entropy_threshold ]
 
     def export_ab_flow_entropy(self, entropy, fname,
-            entropy_threshold=None, ab_win_portion=None, ab_win_num=None):
+                               entropy_threshold=None, ab_win_portion=None,
+                               ab_win_num=None):
         """export abnormal flows based on entropy
 
         Parameters
@@ -726,7 +757,8 @@ class StoDetector (WindowDetector):
 
         """
 
-        ab_idx = self.find_abnormal_windows(entropy, entropy_threshold, ab_win_portion, ab_win_num)
+        ab_idx = self.find_abnormal_windows(entropy, entropy_threshold,
+                                            ab_win_portion, ab_win_num)
 
         fid = open(fname, 'w')
         rg_type = self.desc['win_type']
@@ -741,11 +773,13 @@ class StoDetector (WindowDetector):
             # data, _ = self.data_file.get_fea_slice([st, st+win_size], rg_type)
             data = self.data_file.get_fea_slice([st, st+win_size], rg_type)
             sp, ep = self.data_file.data._get_where([st, st+win_size], rg_type) #FIXME
-            fid.write('Seq # [%i] for abnormal window: [%i], entropy: [%f], start time [%f]\n'%(seq, idx, entropy[idx], st))
+            fid.write(('Seq # [%i] for abnormal window: [%i], entropy: [%f], '
+                       'start time [%f]\n') % (seq, idx, entropy[idx], st))
             i = sp-1
             for l in data:
                 i += 1
-                data_str = '\t'.join( ['%s - %f'%tuple(v) for v in zip(self.data_file.get_fea_list(), l)] )
+                data_str = '\t'.join( ['%s - %f'%tuple(v)
+                                       for v in zip(self.data_file.get_fea_list(), l)] )
                 fid.write('Sample # %i\t%s\n'%(i, data_str))
 
         fid.close()
@@ -756,8 +790,8 @@ class ModelFreeAnoDetector(StoDetector):
     def I(self, em, norm_em):
         return I1(em, norm_em)
 
-    # plot module added by Jing Zhang (jingzbu@gmail.com) 
-    def plot(self, far=None, figure_=None, 
+    # plot module added by Jing Zhang (jingzbu@gmail.com)
+    def plot(self, far=None, figure_=None,
             title_='model free',
             pic_name=None, pic_show=False, csv=None,
             *args, **kwargs):
@@ -787,7 +821,7 @@ class ModelBaseAnoDetector(StoDetector):
     def I(self, em, norm_em):
         return I2(em, norm_em)
 
-    # plot module added by Jing Zhang (jingzbu@gmail.com) 
+    # plot module added by Jing Zhang (jingzbu@gmail.com)
     def plot(self, far=None, figure_=None,
             title_='model based',
             pic_name=None, pic_show=False, csv=None,

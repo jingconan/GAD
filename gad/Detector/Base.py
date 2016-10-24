@@ -1,5 +1,12 @@
 import argparse
+import logging
+
 class BaseDetector(object):
+    LOGGER_NAME = 'detector'
+
+    def __init__(self):
+        self.logger = logging.getLogger(self.LOGGER_NAME)
+
     def set_args(self, argv):
         """set argument and update the desc"""
         parser = argparse.ArgumentParser()
