@@ -26,21 +26,17 @@ Installation
 
 GAD can be installed on Linux, Mac OS X and Windows (through cygwin) with python 2.7. However, we strongly recommend the debian-based OS, e.g., Ubuntu 12.04, 14.04, or 16.04, for which we have prepared a one-command installation script. We recommend using Anaconda2 as the Python environment; conda has a good ability to manage external packages.
 
-To be specific, if you are working on Ubuntu, do the following sequentially:
+To be specific, if you are working on Ubuntu, proceed as follows:
 
 1. Change the working directory to where you want to install GAD, create a new folder `gad`, and then type:
 
- `$ git clone https://github.com/hbhzwj/GAD.git gad/`
+ `$ git clone --recursive https://github.com/hbhzwj/GAD.git gad/`
 
-2. Change the working directory to `gad`, and then type:
-
- `gad$ git clone https://github.com/hbhzwj/gad-ui.git gad-ui/`
-
-3. Change the working directory to be `gad/install`, and then type:
+2. Change the working directory to be `gad/install`, and then type:
 
  `gad/install$ sudo sh debian.sh` 
 
-4. Make sure `socket.io` and `socketIO-client` be installed as well.
+3. Make sure `socket.io` and `socketIO-client` be installed as well.
 
   You may use `$ npm install socket.io` and refer to https://pypi.python.org/pypi/socketIO-client to make `socketIO-client` work on your machine.
 
@@ -287,7 +283,7 @@ Authors
 Jing (Conan) Wang
 
 Jing Wang obtained his Ph.D. degree in Fall 2014 from Division of Systems Engineering, 
-Boston University (advised by Professor [Yannis Paschalidis](http://ionia.bu.edu/)).  His main interest is 
+Boston University (advised by Professor [Yannis Paschalidis](http://sites.bu.edu/paschalidis/)).  His main interest is 
 Mathematical Modeling, i.e., constructing mathematical models for the real world and 
 trying to solve practical problems.
 
@@ -299,11 +295,11 @@ Personal Webpage: https://wangjingpage.wordpress.com/
 Jing Zhang
 
 Jing Zhang currently is a PhD student in Division of Systems Engineering, Boston University 
-(advised by Professor [Yannis Paschalidis](http://ionia.bu.edu/)). 
+(advised by Professor [Yannis Paschalidis](http://sites.bu.edu/paschalidis/)). 
 
 Email: `jzh@bu.edu`
 
 Personal Webpage: http://people.bu.edu/jzh/
 
 
-*Last updated on 10/23/2016 (By Jing Z.)*
+*Last updated on 10/24/2016 (By Jing Z.)*
