@@ -29,9 +29,9 @@ any question, please feel free to contact us.
 Installation
 ============
 
-GAD can be installed on Linux, Mac OS X and Windows (through cygwin) with python 2.7. However, we strongly recommend the debian-based OS, e.g., Ubuntu 12.04 or 14.04, for which we have prepared a one-command installation script. 
+GAD can be installed on Linux, Mac OS X and Windows (through cygwin) with python 2.7. However, we strongly recommend the debian-based OS, e.g., Ubuntu 12.04, 14.04, or 16.04, for which we have prepared a one-command installation script. We recommend using Anaconda2 as the Python environment; conda has a good ability to manage external packages.
 
-To be specific, if you are working on Ubuntu 12.04 or 14.04, do the following sequentially:
+To be specific, if you are working on Ubuntu, do the following sequentially:
 
 1. Change the working directory to where you want to install GAD, create a new folder `gad`, and then type:
 
