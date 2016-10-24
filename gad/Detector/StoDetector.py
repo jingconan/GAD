@@ -800,6 +800,16 @@ class ModelFreeAnoDetector(StoDetector):
             title_='model free',
             pic_name=None, pic_show=False, csv=None,
             *args, **kwargs):
+
+        # Please see https://codeyarns.com/2014/10/27/how-to-change-size-of-matplotlib-plot/
+        # Get current size
+        fig_size = plt.rcParams['figure.figsize']
+
+        # Set figure width to 12.0 and height to 6.0
+        fig_size[0] = 12.0
+        fig_size[1] = 6.0
+        plt.rcParams['figure.figsize'] = fig_size
+
         if not plt: self.save_plot_as_csv()
 
         rt = self.record_data['winT']
@@ -906,6 +916,16 @@ class FBAnoDetector(StoDetector):
            title_=['model free', 'model based'],
            pic_name=None, pic_show=False, csv=None,
            *args, **kwargs):
+
+       # Please see https://codeyarns.com/2014/10/27/how-to-change-size-of-matplotlib-plot/
+       # Get current size
+       fig_size = plt.rcParams['figure.figsize']
+
+       # Set figure width to 12.0 and height to 6.0
+       fig_size[0] = 12.0
+       fig_size[1] = 6.0
+       plt.rcParams['figure.figsize'] = fig_size
+
        if not plt: self.save_plot_as_csv()
        rt = self.record_data['winT']
        mf, mb = zip(*self.record_data['entropy'])
