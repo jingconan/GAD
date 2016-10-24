@@ -18,14 +18,8 @@ Jing Wang and I. Ch. Paschalidis, "***Statistical Traffic Anomaly Detection in T
 Jing Wang and I. Ch. Paschalidis,  "***Robust Anomaly Detection in Dynamic Networks***", Proceedings of the 22nd Mediterranean Conference on Control and Automation
   (MED 14), pages 428-433, June 16--19, 2014, Palermo, Italy. 
 
-Also, recently we have obtained a result accurately approximating the threshold needed by the generalized Hoeffding test (with Markovian assumption corresponding to the model-based method in the package). 
-You are welcome to test the 'mb', 'mfmb', or 'robust' method; any feedback is highly appreciated. The complete theoretical result will come out soon. You are also welcome to test our algorithm by using the 
-repo [TAHTMA](https://github.com/jingzbu/TAHTMA). By the way, the i.i.d. case has been solved recently by other researchers 
-(cf. [J. Unnikrishnan and D. Huang](http://lcav.epfl.ch/files/content/sites/lcav/files/people/jayakrishnan.unnikrishnan/TIT13submitted.pdf)), and we also provide a repo [TAHTIID](https://github.com/jingzbu/TAHTIID)
-for interested readers to test the performance of their method.  
+Jing Zhang and I. Ch. Paschalidis, "***An Improved Composite Hypothesis Test for Markov Models with Applications in Network Anomaly Detection***," Proceedings of the 54th IEEE Conference on Decision and Control, pp. 3810-3815, December 15-18, 2015, Osaka, Japan.
 
-Especially, you are welcome to visit the page [log-normal-sample](https://www.dropbox.com/sh/ce12g4epj5qf250/AABLoBx8KfQJvijQz_R2kEAea?dl=0) to test 'robust' method with our threshold approximation. If you have
-any question, please feel free to contact us.
 
 Installation
 ============
@@ -138,8 +132,8 @@ detect the data directly and plot the result.
 
 Examples:
 
-    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show --lw 5
-    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mf --pic_show --lw 3
+    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show --lw 3
+    $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mb --pic_show --lw 3
     $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mfmb --pic_show --enable_sanov
     $ ./cmdgad detect -c ./example-configs/detect-config.py -d ./test-data/n0_flow.txt -m mf --pic_show --enable_sanov
     $ ./cmdgad detect -c ./example-configs/robust-detect.py -d ./test-data/n0_flow_ref.txt -m robust -r='dump test-data/sc.pk'
