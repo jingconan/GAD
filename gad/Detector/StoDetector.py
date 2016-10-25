@@ -590,24 +590,60 @@ class StoDetector (WindowDetector):
             res.append(threshold)
         return res
 
+    #def save_threshold(self, data_file):
+    #    """ calculate threshold for each window and save it
+    #    """
+    #    # save original state
+    #    original_option = self.desc['detect_window_info']
+    #    self.desc['detect_window_info'] = ['threshold']
+
+    #    original_data = self.record_data
+    #    self.reset_record()
+
+    #    self.detect(data_file)
+    #    result = copy.deepcopy(self.record_data['threshold'])
+
+    #    # rollback the state
+    #    self.desc['detect_window_info'] = original_option
+    #    self.record_data = original_data
+
+    #    return result
+
     def save_threshold(self, data_file):
         """ calculate threshold for each window and save it
         """
-        # save original state
-        original_option = self.desc['detect_window_info']
-        self.desc['detect_window_info'] = ['threshold']
+        rg_type = self.desc['win_type']
+        max_detect_num = self.desc['max_detect_num']
 
-        original_data = self.record_data
-        self.reset_record()
+        self.data_file = data_file
 
-        self.detect(data_file)
-        result = copy.deepcopy(self.record_data['threshold'])
+        win_size = self.desc['win_size']
+        interval = self.desc['interval']
 
-        # rollback the state
-        self.desc['detect_window_info'] = original_option
-        self.record_data = original_data
+        time = self.desc['fr_win_size'] if ('flow_rate' in self.desc['fea_option'].keys()) else 0
 
-        return result
+        threshold = []
+        i = 0
+        while True:
+            i += 1
+            if max_detect_num and i > max_detect_num:
+                break
+            if rg_type == 'time' : print('time: %f' %(time))
+            else: print('flow: %s' %(time))
+
+            try:
+                self.rg = [time, time+win_size] # For two window method
+                flow_num = self.get_flow_num_between(self.rg, rg_type)
+                threshold.append(self.get_threshold(flow_num))
+            except FetchNoDataException:
+                print('there is no data to detect in this window')
+            except DataEndException:
+                print('\nreach data end, break')
+                break
+            time += interval
+        # print(threshold)
+        # assert(1 == 2)
+        return threshold
 
     def get_threshold(self, flow_num):
         entropy_th = self.desc.get('entropy_th')
