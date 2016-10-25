@@ -249,6 +249,9 @@ class RobustDetector(StoDetector.FBAnoDetector):
                 not specfied, its default value is
                 "desc['dump_folder']/PLManager_scheck.pk" """)
 
+        parser.add_argument('--days', default=7, type=float,
+                help="""number of days the simulated test data lasts; default=7""")
+
         parser.add_argument('--alpha', default=0.5, type=float,
                 help="""weight of minimum threshold determining the up-bound of nominal cross-entropy;
                 should be within (0, 1), default=0.5""")
@@ -432,7 +435,7 @@ class RobustDetector(StoDetector.FBAnoDetector):
                 pic_name=None, pic_show=False,
 		lw=self.desc['lw'],
                 *args, **kwargs)
-        plt.xlim([0, 24 * 7])
+        plt.xlim([0, 24 * self.desc['days']])
         plt.ylabel('divergence')
         plt.xlabel('time (h)')
         if pic_name and not plt.__name__.startswith("guiqwt"): plt.savefig(pic_name)
