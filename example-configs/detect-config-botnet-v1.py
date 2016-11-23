@@ -24,10 +24,10 @@ def fast_date_parser(date):
 
 DETECTOR_DESC = {
     'version' : VERSION,
-    'interval': 2,
-    'win_size': 2,
-    'win_type': 'time', # 'time'|'flow'
-    'fr_win_size': 100, # window size for estimation of flow rate
+    'interval': 100,
+    'win_size': 100,
+    'win_type': 'flow', # 'time'|'flow'
+    'fr_win_size': 10, # window size for estimation of flow rate
     'false_alarm_rate': 0.001,
     'time_index_feature_name': 'StartTime',
     # date_parse can either be a format string or a function. If it is a
@@ -76,26 +76,25 @@ DETECTOR_DESC = {
         {
             'feature_name': 'Sport',
             'feature_type': 'port',
-            'quantized_number': 300,
+            'quantized_number': 3,
         },
         {
             'feature_name': 'Dport',
             'feature_type': 'port',
-            'quantized_number': 10,
+            'quantized_number': 3,
         },
         #  {
         #      'feature_name': 'SrcAddr',
         #      'feature_type': 'ipv4_address',
         #      'ip_cluster_num': 5,
-        #      'distance_quantize_num': 3,
         #      'DEFAULT': -1,
         #      'ip_columns': ['SrcAddr'],
-        #      'save_symbol_index_path': './SrcAddrSymbolIndex.json'
+        #      'save_symbol_index_path': './test-data/SrcAddrSymbolIndex.json'
         #  },
         {
             'feature_name': 'SrcAddr',
             'feature_type': 'ipv4_address',
-            'symbol_index': json.load(open('./SrcAddrSymbolIndex.json', 'r')),
+            'symbol_index': json.load(open('./test-data/SrcAddrSymbolIndex.json', 'r')),
         },
         #  {
         #      'feature_name': 'SrcAddr',
@@ -107,7 +106,7 @@ DETECTOR_DESC = {
         #  },
 
     ],
-    'normal_rg': [0, 1500],
+    'normal_rg': None,
     'method': 'mf',
     'pic_show': True,
     'pic_name': './res.eps',
